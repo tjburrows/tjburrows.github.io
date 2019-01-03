@@ -27,7 +27,7 @@ _54th AIAA Aerospace Sciences Meeting_. January, 2016.<br>
 
 **Controlled Dynamics of Streamwise Vorticity Effected in an Offset Diffuser** <br>
 Travis J. Burrows, Bojan Vukasinovic, and Ari Glezer <br>
-_APS Division of Fluid Dynamics_, Denver, CO. November, 2018.  <br>
+_APS Division of Fluid Dynamics_, Atlanta, GA. November, 2018.  <br>
 
 **Coupled Control of Flow Separation and Streamwise Vortical Structures** <br>
 Travis J. Burrows, Bojan Vukasinovic, and Ari Glezer <br>
