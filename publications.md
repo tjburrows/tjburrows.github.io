@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Conferences
-permalink: /publications/conferences/
+permalink: /publications/
 ---
 
 ## Journal Papers
