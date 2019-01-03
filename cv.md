@@ -13,5 +13,8 @@ Georgia Institute of Technology
 North Carolina State University
 
 ## Skills
-### Programming Languages
-C, MATLAB, Python
+**Programming Languages** <br>
+C, MATLAB, Python, Labview
+
+**Software** <br>
+LabView, Siemens NX, LaVision Davis, Tecplot Linux
