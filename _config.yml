@@ -1,6 +1,6 @@
 title: Travis Burrows
-description: Test website
-sourcecode: "https://github.com/gchauras/much-worse-jekyll-theme"
+description: Travis Burrows
+sourcecode: "https://github.com/tjburrows/tjburrows.github.io"
 
 permalink: blog/:year/:month/:day/:title
 exclude: ["Makefile", "README.md"]
