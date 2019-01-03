@@ -4,16 +4,26 @@ title: Conferences
 permalink: /publications/conferences/
 ---
 
-## Cool hobby to prove you are athletic
+# Papers
 
-Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+[**Investigation of Trapped Vorticity Concentrations Effected by Hybrid Actuation in an Offset Diffuser**](https://arc.aiaa.org/doi/abs/10.2514/6.2016-0055) <br>
+Travis J. Burrows, Zicheng Gong, Bojan Vukasinovic, and Ari Glezer <br>
+_54th AIAA Aerospace Sciences Meeting_. 2016  <br>
 
-## Cooler but boring hobby to prove you are smart
-Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
+# Presentations
 
-## Cooler hobby 2
-Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+**Controlled Dynamics of Streamwise Vorticity Effected in an Offset Diffuser** <br>
+Travis J. Burrows, Bojan Vukasinovic, and Ari Glezer <br>
+_APS Division of Fluid Dynamics_, Denver, CO, November 2018  <br>
 
-## Ancient hobby which is not cool anymore
+**Coupled Control of Flow Separation and Streamwise Vortical Structures** <br>
+Travis J. Burrows, Bojan Vukasinovic, and Ari Glezer <br>
+_APS Division of Fluid Dynamics_, Denver, CO, November 2017  <br>
 
-Consetetur sadipscing elitr,  sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr,  sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr,  sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+**Controlled Flow Distortion in an Offset Duiffuser using Hybrid Trapped Vorticity** <br>
+Travis J. Burrows, Bojan Vukasinovic, and Ari Glezer <br>
+_APS Division of Fluid Dynamics_, Portland, OR, November 2016  <br>
+
+**Control of Trapped Vorticity in an Offset Diffuser** <br>
+Travis J. Burrows, Bojan Vukasinovic, and Ari Glezer <br>
+_APS Division of Fluid Dynamics_, Boston, MA, November 2015  <br>
