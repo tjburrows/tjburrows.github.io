@@ -6,7 +6,7 @@ permalink: /
 
 {% include image.html url="images/photo.jpg" caption="" max_width="300px" align="right" %}
 
-I am a PhD candidate in the Woodruff School of Mechanical Engineering at Georgia Institute of Technology, under [Dr. Ari Glezer](http://fmrl.gatech.edu).  My research is in experimental fluid mechanics.  More specifically, I study the effect of active flow control on the flow separation and resulting three-dimensional vortical structure inside offset diffusers and its effects on engine performance.
+I am a PhD candidate in the Woodruff School of Mechanical Engineering at Georgia Institute of Technology, under [Dr. Ari Glezer](http://fmrl.gatech.edu).  My research is in experimental fluid mechanics.  More specifically, I study the effect of active flow control on the flow separation and resulting three-dimensional vortical structure inside offset diffusers, and its effects on engine performance.
 
 ## Contact
 Travis J Burrows
