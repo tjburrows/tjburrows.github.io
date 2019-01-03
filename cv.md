@@ -17,4 +17,4 @@ North Carolina State University
 C, MATLAB, Python, Labview
 
 **Software** <br>
-LabView, Siemens NX, LaVision Davis, Tecplot Linux
+LabView, Siemens NX, LaVision Davis, Tecplot, Linux
