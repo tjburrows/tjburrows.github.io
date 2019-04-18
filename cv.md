@@ -14,7 +14,7 @@ North Carolina State University
 
 ## Skills
 **Programming Languages** <br>
-C, MATLAB, Python, Labview
+C, C++, MATLAB, Python
 
 **Software** <br>
 LabView, Siemens NX, LaVision Davis, Tecplot, Linux
