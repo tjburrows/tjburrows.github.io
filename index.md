@@ -11,4 +11,4 @@ I am a PhD candidate in the Woodruff School of Mechanical Engineering at Georgia
 ## Contact
 Travis J Burrows
 LinkedIn: [linkedin.com/in/tjburrows](https://www.linkedin.com/in/tjburrows)
-GitHub:   github.com/tjburrows(github.com/tjburrows)
+GitHub:   [github.com/tjburrows](github.com/tjburrows)
