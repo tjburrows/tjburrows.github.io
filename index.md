@@ -10,6 +10,6 @@ I am a PhD candidate in the Woodruff School of Mechanical Engineering at Georgia
 
 ## Contact
 
-LinkedIn: [linkedin.com/in/tjburrows](https://www.linkedin.com/in/tjburrows)
+LinkedIn:&nbsp;[linkedin.com/in/tjburrows](https://www.linkedin.com/in/tjburrows)
 
-GitHub:   [github.com/tjburrows](github.com/tjburrows)
+GitHub:&nbsp;&nbsp;&nbsp;[github.com/tjburrows](github.com/tjburrows)
