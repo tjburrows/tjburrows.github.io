@@ -9,5 +9,7 @@ permalink: /
 I am a PhD candidate in the Woodruff School of Mechanical Engineering at Georgia Institute of Technology, under [Dr. Ari Glezer](http://fmrl.gatech.edu).  My research is in experimental fluid mechanics.  More specifically, I study the effect of active flow control on the flow separation and resulting three-dimensional vortical structure inside offset diffusers, and its effects on aircraft engine performance.
 
 ## Contact
-####LinkedIn: [linkedin.com/in/tjburrows](https://www.linkedin.com/in/tjburrows)
-####GitHub:   [github.com/tjburrows](github.com/tjburrows)
+
+LinkedIn: [linkedin.com/in/tjburrows](https://www.linkedin.com/in/tjburrows)
+
+GitHub:   [github.com/tjburrows](github.com/tjburrows)
