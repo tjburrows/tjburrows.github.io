@@ -11,7 +11,7 @@ Travis J. Burrows, Bojan Vukasinovic, Matthew T. Lakebrink, Mortaza Mani, and Ar
 _International Journal of Heat and Fluid Flow_, Volume 75, 2019.<br>
 
 ## Conference Papers
-[**Control of a Transonic Shock in a Serpentine Diffuser using Surface Fluidic Actuation **](https://arc.aiaa.org/doi/10.2514/6.2019-3687) <br>
+[**Control of a Transonic Shock in a Serpentine Diffuser using Surface Fluidic Actuation**](https://arc.aiaa.org/doi/10.2514/6.2019-3687) <br>
 Travis J. Burrows, Bojan Vukasinovic, and Ari Glezer <br>
 _AIAA Aviation 2019 Forum_. June, 2019.<br>
 
