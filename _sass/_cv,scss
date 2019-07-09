@@ -30,6 +30,8 @@ ul, ol, dl, figure,
     margin-bottom: $spacing-unit/2;
 }
 
+// Added from markdown-cv kjhealy-screen
+
 body {
 	font: normal normal 400;
 	font-size: 80%;
