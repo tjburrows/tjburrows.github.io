@@ -3,6 +3,7 @@ layout: page
 title: CV
 permalink: /cv/
 ---
+
 Download [PDF version](https://github.com/tjburrows/tjburrows.github.io/raw/master/TravisBurrowsResume.pdf)
 
 ## Education
