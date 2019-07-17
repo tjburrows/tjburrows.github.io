@@ -13,3 +13,5 @@ I am a PhD candidate in the Woodruff School of Mechanical Engineering at Georgia
 LinkedIn:&nbsp;&nbsp;[linkedin.com/in/tjburrows](https://www.linkedin.com/in/tjburrows)
 
 GitHub:&nbsp;&nbsp;&nbsp;&nbsp;[github.com/tjburrows](https://www.github.com/tjburrows)
+
+Email:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<A HREF="mailto:&#116;&#098;&#117;&#114;&#114;&#111;&#119;&#115;&#051;&#064;&#103;&#097;&#116;&#101;&#099;&#104;&#046;&#101;&#100;&#117;">&#116;&#098;&#117;&#114;&#114;&#111;&#119;&#115;&#051;&#064;&#103;&#097;&#116;&#101;&#099;&#104;&#046;&#101;&#100;&#117;</A>
