@@ -16,4 +16,4 @@ LinkedIn:&nbsp;&nbsp;[linkedin.com/in/tjburrows](https://www.linkedin.com/in/tjb
 
 GitHub:&nbsp;&nbsp;&nbsp;&nbsp;[github.com/tjburrows](https://www.github.com/tjburrows)
 
-[Contact Form](/contact/)
+[Contact Form](/contact)
