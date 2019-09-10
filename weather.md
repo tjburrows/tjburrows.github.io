@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: plotly
 permalink: /weather/
 title: Georgia Tech Weather
 ---
