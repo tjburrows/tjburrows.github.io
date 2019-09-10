@@ -21,7 +21,7 @@ title: Georgia Tech Weather
 
 ## Plotly fun
 
-<div id="tester" style="width:90%;height:250px;">
+<div id="tester" style="width:90%;height:250px;"></div>
 
 <script>
   TESTER = document.getElementById('tester');
@@ -35,44 +35,42 @@ title: Georgia Tech Weather
   console.log( Plotly.BUILD );
 </script>
 
+<div id="myDiv"></div>
 
-</div>
+<script>
+  var data = [{
+  type:'scattermapbox',
+  lat:['45.5017'],
+  lon:['-73.5673'],
+  mode:'markers',
+  marker: {
+    size:14
+  },
+  text:['Montreal']
+  }]
 
-<div id="myDiv">
-  <script>
-    var data = [{
-    type:'scattermapbox',
-    lat:['45.5017'],
-    lon:['-73.5673'],
-    mode:'markers',
-    marker: {
-      size:14
+var layout = {
+  autosize: true,
+  hovermode:'closest',
+  mapbox: {
+    bearing:0,
+    center: {
+      lat:45,
+      lon:-73
     },
-    text:['Montreal']
-    }]
+    pitch:0,
+    zoom:5,
+    style:open-street-map
+  },
+}
 
-  var layout = {
-    autosize: true,
-    hovermode:'closest',
-    mapbox: {
-      bearing:0,
-      center: {
-        lat:45,
-        lon:-73
-      },
-      pitch:0,
-      zoom:5,
-      style:open-street-map
-    },
-  }
+Plotly.setPlotConfig({
+  mapboxAccessToken: 'pk.eyJ1IjoiZXRwaW5hcmQiLCJhIjoiY2luMHIzdHE0MGFxNXVubTRxczZ2YmUxaCJ9.hwWZful0U2CQxit4ItNsiQ'
+})
 
-  Plotly.setPlotConfig({
-    mapboxAccessToken: 'pk.eyJ1IjoiZXRwaW5hcmQiLCJhIjoiY2luMHIzdHE0MGFxNXVubTRxczZ2YmUxaCJ9.hwWZful0U2CQxit4ItNsiQ'
-  })
+Plotly.plot('myDiv', data, layout, {showSendToCloud: true})
+</script>
 
-  Plotly.plot('myDiv', data, layout, {showSendToCloud: true})
-  </script>
-</div>
 
 
 
