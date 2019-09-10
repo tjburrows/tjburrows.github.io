@@ -19,6 +19,10 @@ title: Georgia Tech Weather
 ## Map
 <script src='https://darksky.net/map-embed/@temperature,33.776,-84.3988,8.js?embed=true&timeControl=true&fieldControl=true&defaultField=temperature&defaultUnits=_f'></script>
 
+## Plotly fun
+
+<div id="tester" style="width:90%;height:250px;"></div>
+
 <script>
   TESTER = document.getElementById('tester');
 
