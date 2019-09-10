@@ -37,7 +37,7 @@ title: Georgia Tech Weather
 
 
 </div>
-<div id="myDiv"></div>
+<div id="myDiv">
   <script>
     var data = [{
     type:'scattermapbox',
