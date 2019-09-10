@@ -21,7 +21,7 @@ title: Georgia Tech Weather
 
 ## Plotly fun
 
-<div id="tester" style="width:90%;height:250px;"></div>
+<div id="tester" style="width:90%;height:250px;">
 
 <script>
   TESTER = document.getElementById('tester');
@@ -34,3 +34,45 @@ title: Georgia Tech Weather
   /* Current Plotly.js version */
   console.log( Plotly.BUILD );
 </script>
+
+
+</div>
+<div id="myDiv"></div>
+  <script>
+    var data = [{
+    type:'scattermapbox',
+    lat:['45.5017'],
+    lon:['-73.5673'],
+    mode:'markers',
+    marker: {
+      size:14
+    },
+    text:['Montreal']
+    }]
+
+  var layout = {
+    autosize: true,
+    hovermode:'closest',
+    mapbox: {
+      bearing:0,
+      center: {
+        lat:45,
+        lon:-73
+      },
+      pitch:0,
+      zoom:5,
+      style:open-street-map
+    },
+  }
+
+  //Plotly.setPlotConfig({
+ //   mapboxAccessToken: 'pk.eyJ1IjoiZXRwaW5hcmQiLCJhIjoiY2luMHIzdHE0MGFxNXVubTRxczZ2YmUxaCJ9.hwWZful0U2CQxit4ItNsiQ'
+  //})
+
+  Plotly.plot('myDiv', data, layout, {showSendToCloud: true})
+  </script>
+</div>
+
+
+
+
