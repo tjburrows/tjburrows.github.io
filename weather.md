@@ -35,7 +35,7 @@ title: Georgia Tech Weather
   console.log( Plotly.BUILD );
 </script>
 
-<div id="myDiv"></div>
+<div id="myDiv" style="width:90%;height:250px;"></div>
 
 <script>
   var data = [{
