@@ -37,6 +37,7 @@ title: Georgia Tech Weather
 
 
 </div>
+
 <div id="myDiv">
   <script>
     var data = [{
@@ -65,9 +66,9 @@ title: Georgia Tech Weather
     },
   }
 
-  //Plotly.setPlotConfig({
- //   mapboxAccessToken: 'pk.eyJ1IjoiZXRwaW5hcmQiLCJhIjoiY2luMHIzdHE0MGFxNXVubTRxczZ2YmUxaCJ9.hwWZful0U2CQxit4ItNsiQ'
-  //})
+  Plotly.setPlotConfig({
+    mapboxAccessToken: 'pk.eyJ1IjoiZXRwaW5hcmQiLCJhIjoiY2luMHIzdHE0MGFxNXVubTRxczZ2YmUxaCJ9.hwWZful0U2CQxit4ItNsiQ'
+  })
 
   Plotly.plot('myDiv', data, layout, {showSendToCloud: true})
   </script>
