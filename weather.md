@@ -1,9 +1,13 @@
 ---
 layout: plotly
 permalink: /weather/
-title: Georgia Tech Weather
+title: Travis's Weather Forecast from Weather.gov
 ---
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<button id='button1' onclick="geocode()">Submit</button>
+<button id='button2' onclick="getCurrentLocation()">My Current Location</button>
+<div id="map"></div>
+<div id="graphs"></div>
 <script>
 
         var loc = document.createElement('INPUT')
@@ -190,8 +194,4 @@ title: Georgia Tech Weather
         
         }
             
-    </script>
-    <button id='button1' onclick="geocode()">Submit</button>
-    <button id='button2' onclick="getCurrentLocation()">My Current Location</button>
-    <div id="map"></div>
-    <div id="graphs"></div>
+</script>
