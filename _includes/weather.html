@@ -24,7 +24,7 @@
                 document.getElementById("button1").click();
             }
         })
-        document.body.insertBefore(loc, document.getElementById('button1'));
+        document.body.insertBefore(loc, document.getElementsByTagName('button')[0]);
         var HttpClient = function() {
             this.get = function(aUrl, aCallback) {
                 var anHttpRequest = new XMLHttpRequest();
