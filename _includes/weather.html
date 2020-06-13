@@ -91,7 +91,9 @@
                             center: { lon: center[0], lat: center[1] },
                             zoom: 10
                         },
-                        modes: 'lines'
+                        modes: 'lines',
+                        paper_bgcolor:'rgba(0,0,0,0)',
+                        plot_bgcolor:'rgba(0,0,0,0)',
                         
                     }
                     Plotly.newPlot(elem, mapData, mapLayout)

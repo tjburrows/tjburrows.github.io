@@ -1,6 +1,6 @@
 ---
 layout: raw
 permalink: /weather/
-title: Travis's Weather Forecast from Weather.gov
+title: Weather Forecast from Weather.gov
 ---
 {% include weather.html %}
