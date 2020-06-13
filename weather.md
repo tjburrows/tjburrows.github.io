@@ -4,6 +4,7 @@ permalink: /weather/
 title: Travis's Weather Forecast from Weather.gov
 ---
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<input type="text" placeholder="Atlanta, GA" name="location" />
 <button id='button1' onclick="geocode()">Submit</button>
 <button id='button2' onclick="getCurrentLocation()">My Current Location</button>
 <div id="map"></div>
