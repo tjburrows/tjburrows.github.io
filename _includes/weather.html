@@ -102,7 +102,7 @@
                     Plotly.newPlot(elem, mapData, mapLayout)
                     
                     //  Generate data arrays
-                    fields = ['temperature','probabilityOfPrecipitation', 'quantitativePrecipitation', 'relativeHumidity','relativeHumidity', 'dewpoint', 'snowfallAmount']
+                    fields = ['temperature','probabilityOfPrecipitation', 'quantitativePrecipitation', 'pressure','relativeHumidity', 'dewpoint', 'snowfallAmount']
                     dataStruct = {}
                     fields.forEach(function (field, index) {
                         if (field in props) {
