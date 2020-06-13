@@ -1,5 +1,5 @@
 ---
-layout: plotly
+layout: raw
 permalink: /weather/
 title: Travis's Weather Forecast from Weather.gov
 ---
