@@ -11,7 +11,9 @@
     <button id='button1' onclick="geocode()" class="fa fa-search fa-border fa-lg" aria-hidden="true" style="cursor:pointer"></button>
     
     <div id="errors" style='text-align:center'></div>
+    <div id="today" style='text-align:center'></div>
     <div id="map" style='text-align:center'></div>
+    <div id="days" style='text-align:center'></div>
     <div id="graphs" style='text-align:center'></div>
     <script>
         var loc = document.createElement('INPUT')
@@ -38,7 +40,6 @@
                         aCallback('[]'); 
                     }
                 }
-                       
                 anHttpRequest.open( "GET", aUrl, true );            
                 anHttpRequest.send( null );
             }
@@ -71,10 +72,14 @@
                 }
                 else {
                     responseJson = JSON.parse(pointsResponse)
-                    gridData = responseJson.properties.forecastGridData
-                    client.get(gridData, function(gridResponse) {
+                    forcastDay = responseJson.properties.forecast
+                    forcastGrid = responseJson.properties.forecastGridData
+                    
+                    //  Create detailed forecasts
+                    client.get(forcastGrid, function(gridResponse) {
                         responseJson = JSON.parse(gridResponse)
                         props = responseJson.properties
+                        console.log(props)
                         timeLength = props.temperature.values.length
                         geometry = responseJson.geometry.coordinates[0]
                         
@@ -123,7 +128,100 @@
                         
                         
                         //  Create day by day summary
-                         fields = ['temperature','probabilityOfPrecipitation', 'quantitativePrecipitation','relativeHumidity', 'dewpoint']
+                        client.get(forcastDay, function(forecastResponse) {
+                            dayProps = JSON.parse(forecastResponse).properties
+                            for (var i = 0; i < props.maxTemperature.values.length; i++) {
+                                props.minTemperature.values[i].value = props.minTemperature.values[i].value * (9./5.) + 32.
+                                props.maxTemperature.values[i].value = props.maxTemperature.values[i].value * (9./5.) + 32.
+                            }
+                            var minT = props.minTemperature.values[0].value
+                            var maxT = props.maxTemperature.values[0].value
+                            for (var i = 1; i < props.maxTemperature.values.length; i++) {
+                                if (props.minTemperature.values[i].value < minT)
+                                    minT = props.minTemperature.values[i].value
+                                if (props.maxTemperature.values[i].value > maxT)
+                                    maxT = props.maxTemperature.values[i].value
+                            }
+                            for (var i = 0; i < props.maxTemperature.values.length; i++) {
+                                validDay = props.minTemperature.values[i].validTime.split('T')[0]
+                                trace1 = {
+                                    x: [props.minTemperature.values[i].value],
+                                    y: [validDay],
+                                    type: 'bar',
+                                    orientation: 'h',
+                                    marker: {
+                                        color: 'rgba(1,1,1,0.0)'
+                                    },
+                                    text: Math.round(props.minTemperature.values[i].value).toString() + String.fromCharCode(176),
+                                    textposition: 'outside',
+                                }
+                                trace2 = {
+                                    x:  [props.maxTemperature.values[i].value-props.minTemperature.values[i].value],
+                                    y: [validDay],
+                                    type: 'bar',
+                                    marker: {
+                                        color: '#737373'
+                                    },
+                                    orientation: 'h',
+                                    text: Math.round(props.maxTemperature.values[i].value).toString() + String.fromCharCode(176),
+                                    textposition: 'outside',
+                                }
+                                var layout = {
+                                    paper_bgcolor:'rgba(0,0,0,0)',
+                                    plot_bgcolor:'rgba(0,0,0,0)',
+                                    showlegend: false,
+                                    margin: {b:0, t:7},
+                                    height: 35,
+                                    xaxis: {
+                                        showgrid: false,
+                                        showline: false,
+                                        zeroline: false,
+                                        fixedrange: true,
+                                        showticklabels: false,
+                                        range: [minT - 3, maxT + 3],
+                                    },
+                                    yaxis: {
+                                        showline: false,
+                                        showgrid: false,
+                                        zeroline: false,
+                                        autotick:false,
+                                        tickformat: '<b>%a</b>',
+                                        fixedrange: true,
+                                    },
+                                    barmode: 'stack',
+                                }
+                                var config = {
+                                    responsive: true,
+                                    displayModeBar: false,
+                                    staticPlot: true,
+                                }
+                                if (i == 0) {
+                                    offset = 20
+                                    layout.margin.t += offset
+                                    layout.height += offset
+                                }
+                                    
+                                    
+                                var div = document.createElement('button');
+                                div.style.outline = 'none'
+                                div.style['background-color'] = 'Transparent'
+                                div.style.cursor = 'Pointer'
+                                div.style.border='none'
+                                div.style.width = "90vw";
+                                div.style.display = "inline-block";
+                                elem = document.getElementById("days").appendChild(div)
+                                elem.classList.add('collapsible')
+                                var div = document.createElement('div');
+                                div.style.width = "90vw";
+                                div.style.display = "inline-block";
+                                div.class = 'collapsible'
+                                div.type = 'button'
+                                elem = elem.appendChild(div)
+                                Plotly.newPlot(elem, [trace1,trace2], layout, config);
+                                elem.class = 'collapsible'
+                                elem.type = 'button'
+                            }
+                        })
                         
                         //  Generate data arrays
                         fields = ['temperature','probabilityOfPrecipitation', 'quantitativePrecipitation','relativeHumidity', 'dewpoint']
@@ -204,6 +302,7 @@
                                     //gridcolor: gridcolor,
                                     fixedrange: true,
                                 },
+
                             }
                             var config = {
                                 responsive: true,
@@ -238,7 +337,7 @@
         function geocode(position = {}) {
             var client = new HttpClient();
             // Get coordinate of location
-            url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json'
+            url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json&limit=1'
             client.get(url, function(nomResponse) {
                 if (nomResponse == '[]'){
                     clearID('errors')
