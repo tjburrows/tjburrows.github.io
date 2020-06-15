@@ -38,10 +38,9 @@
                             aCallback(anHttpRequest.responseText); 
                         }
                         else {
-                            aCallback('[]'); 
+                            aCallback(null); 
                         }
                     }
-                    
                 }
                 anHttpRequest.open( "GET", aUrl, true );            
                 anHttpRequest.send( null );
@@ -69,8 +68,9 @@
             var locString = lat + ',' + lon
             var client = new HttpClient();
             client.get('https://api.weather.gov/points/' + locString, function(pointsResponse) {
+                responseJson = JSON.parse(pointsResponse)
                 clearID('errors')
-                if (pointsResponse == '[]') {
+                if (responseJson == null || responseJson.length == 0) {
                     printError('Error: Weather at this location is not available from Weather.gov.')
                 }
                 else {
@@ -131,7 +131,6 @@
                         
                         
                         //  Create day by day summary
-                        
                         client.get(forcastDay, function(forecastResponse) {
                             dayProps = JSON.parse(forecastResponse).properties
                             for (var i = 0; i < props.maxTemperature.values.length; i++) {
@@ -337,25 +336,24 @@
             document.getElementById("errors").appendChild(node)
         }
         
+        // Get coordinate of location
         function geocode(position = {}) {
             var client = new HttpClient();
-            // Get coordinate of location
             url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json&limit=1'
             client.get(url, function(nomResponse) {
-                if (nomResponse == '[]'){
+                responseJson = JSON.parse(nomResponse)
+                if (responseJson == null || responseJson.length == 0) {
                     clearID('errors')
                     printError('Error: Location not identifiable from \"' + loc.value + '\".  Try again.')
                 }
                 else {
-                    responseJson = JSON.parse(nomResponse)[0]
-                    var lat = responseJson.lat
-                    var lon = responseJson.lon
+                    var lat = responseJson[0].lat
+                    var lon = responseJson[0].lon
                     console.log('Geocode success: ' + loc.value + ' -> (' + lat + ', ' + lon + ')' )
                     getWeather(lat,lon)
                 }
             })
         }
-    
         geocode()
     </script>
   </body>
