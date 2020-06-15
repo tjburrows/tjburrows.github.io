@@ -7,9 +7,10 @@
   </head>
   <body style='text-align:center'>
     <header>Travis's Weather Forecast from Weather.gov</header>
+    
     <button id='button2' onclick="getCurrentLocation()" class="fa fa-location-arrow fa-border fa-lg" aria-hidden="true" style="cursor:pointer"></button>
     <button id='button1' onclick="geocode()" class="fa fa-search fa-border fa-lg" aria-hidden="true" style="cursor:pointer"></button>
-    
+
     <div id="errors" style='text-align:center'></div>
     <div id="today" style='text-align:center'></div>
     <div id="map" style='text-align:center'></div>
@@ -19,6 +20,7 @@
         var loc = document.createElement('INPUT')
         loc.setAttribute("type", "text");
         loc.setAttribute("value", "Atlanta, GA");
+        loc.style['margin-top'] = '10px'
         loc.addEventListener("keyup", function(event) {
             // Number 13 is the "Enter" key on the keyboard
             if (event.keyCode === 13) {
@@ -134,7 +136,7 @@
                             modes: 'lines',
                             paper_bgcolor:'rgba(0,0,0,0)',
                             plot_bgcolor:'rgba(0,0,0,0)',
-                            margin: {l:0, r:0, b:0, t:0},
+                            margin: {l:0, r:0, b:20, t:20},
                         }
                         var mapConfig = {
                             responsive: true,
@@ -161,6 +163,7 @@
                             clearID('days')
                             for (var i = 0; i < props.maxTemperature.values.length; i++) {
                                 validDay = props.minTemperature.values[i].validTime.split('T')[0]
+                                
                                 trace1 = {
                                     x: [props.minTemperature.values[i].value],
                                     y: [validDay],
@@ -172,6 +175,7 @@
                                     text: Math.round(props.minTemperature.values[i].value).toString() + String.fromCharCode(176),
                                     textposition: 'outside',
                                 }
+                                
                                 trace2 = {
                                     x:  [props.maxTemperature.values[i].value-props.minTemperature.values[i].value],
                                     y: [validDay],
@@ -183,6 +187,7 @@
                                     text: Math.round(props.maxTemperature.values[i].value).toString() + String.fromCharCode(176),
                                     textposition: 'outside',
                                 }
+                                
                                 var layout = {
                                     paper_bgcolor:'rgba(0,0,0,0)',
                                     plot_bgcolor:'rgba(0,0,0,0)',
@@ -207,16 +212,13 @@
                                     },
                                     barmode: 'stack',
                                 }
+                                
                                 var config = {
                                     responsive: true,
                                     displayModeBar: false,
                                     staticPlot: true,
                                 }
-                                if (i == 0) {
-                                    offset = 20
-                                    layout.margin.t += offset
-                                    layout.height += offset
-                                }
+                                
                                 var div = document.createElement('button');
                                 div.style.outline = 'none'
                                 div.style['background-color'] = 'Transparent'
@@ -226,6 +228,7 @@
                                 div.style.display = "inline-block";
                                 elem = document.getElementById("days").appendChild(div)
                                 elem.classList.add('collapsible')
+                                
                                 var div = document.createElement('div');
                                 div.style.width = "90vw";
                                 div.style.display = "inline-block";
