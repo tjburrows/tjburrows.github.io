@@ -33,8 +33,7 @@
             this.get = function(aUrl, aCallback) {
                 var anHttpRequest = new XMLHttpRequest();
                 anHttpRequest.onreadystatechange = function() { 
-                    if (anHttpRequest.readyState == 4) {
-                        if (anHttpRequest.status == 200 || anHttpRequest.status == 304) {
+                    if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
                             aCallback(anHttpRequest.responseText); 
                         }
                     }
@@ -357,7 +356,7 @@
             url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json&limit=1'
             client.get(url, function(nomResponse) {
                 responseJson = JSON.parse(nomResponse)
-                if (responseJson == null || responseJson.length == 0) {
+                if (responseJson.length == 0) {
                     clearID('errors')
                     printError('Error: Location not identifiable from \"' + loc.value + '\".  Try again.')
                 }
