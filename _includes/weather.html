@@ -342,16 +342,16 @@
             url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json&limit=1'
             client.get(url, function(nomResponse) {
                 responseJson = JSON.parse(nomResponse)
-                if (responseJson == null || responseJson.length == 0) {
-                    clearID('errors')
-                    printError('Error: Location not identifiable from \"' + loc.value + '\".  Try again.')
-                }
-                else {
+//                 if (responseJson == null || responseJson.length == 0) {
+//                     clearID('errors')
+//                     printError('Error: Location not identifiable from \"' + loc.value + '\".  Try again.')
+//                 }
+//                 else {
                     var lat = responseJson[0].lat
                     var lon = responseJson[0].lon
                     console.log('Geocode success: ' + loc.value + ' -> (' + lat + ', ' + lon + ')' )
                     getWeather(lat,lon)
-                }
+//                 }
             })
         }
         geocode()
