@@ -33,8 +33,13 @@
             this.get = function(aUrl, aCallback) {
                 var anHttpRequest = new XMLHttpRequest();
                 anHttpRequest.onreadystatechange = function() { 
-                    if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
+                    if (anHttpRequest.readyState == 4) {
+                        if (anHttpRequest.status == 200 || anHttpRequest.status == 304) {
                             aCallback(anHttpRequest.responseText); 
+                        }
+                        else {
+                            aCallback('[]'); 
+                        }
                     }
                 }
                 anHttpRequest.open( "GET", aUrl, true );            
