@@ -33,12 +33,15 @@
             this.get = function(aUrl, aCallback) {
                 var anHttpRequest = new XMLHttpRequest();
                 anHttpRequest.onreadystatechange = function() { 
-                    if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
-                        aCallback(anHttpRequest.responseText); 
+                    if (anHttpRequest.readyState == 4) {
+                        if (anHttpRequest.status == 200 || anHttpRequest.status == 304) {
+                            aCallback(anHttpRequest.responseText); 
+                        }
+                        else {
+                            aCallback('[]'); 
+                        }
                     }
-                    else if (anHttpRequest.readyState == 4 && anHttpRequest.status != 200) {
-                        aCallback('[]'); 
-                    }
+                    
                 }
                 anHttpRequest.open( "GET", aUrl, true );            
                 anHttpRequest.send( null );
@@ -128,6 +131,7 @@
                         
                         
                         //  Create day by day summary
+                        
                         client.get(forcastDay, function(forecastResponse) {
                             dayProps = JSON.parse(forecastResponse).properties
                             for (var i = 0; i < props.maxTemperature.values.length; i++) {
@@ -142,6 +146,7 @@
                                 if (props.maxTemperature.values[i].value > maxT)
                                     maxT = props.maxTemperature.values[i].value
                             }
+                            clearID('days')
                             for (var i = 0; i < props.maxTemperature.values.length; i++) {
                                 validDay = props.minTemperature.values[i].validTime.split('T')[0]
                                 trace1 = {
@@ -200,8 +205,6 @@
                                     layout.margin.t += offset
                                     layout.height += offset
                                 }
-                                    
-                                    
                                 var div = document.createElement('button');
                                 div.style.outline = 'none'
                                 div.style['background-color'] = 'Transparent'
