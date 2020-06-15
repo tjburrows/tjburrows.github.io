@@ -7,18 +7,18 @@
   </head>
   <body style='text-align:center'>
     <header>Travis's Weather Forecast from Weather.gov</header>
-    
-    <button id='button2' onclick="getCurrentLocation()" class="fa fa-location-arrow fa-border fa-lg" aria-hidden="true" style="cursor:pointer"></button>
-    <button id='button1' onclick="geocode()" class="fa fa-search fa-border fa-lg" aria-hidden="true" style="cursor:pointer"></button>
-
+    <div class="row" id="search" style='text-align:center'>
+        <button id='button2' onclick="getCurrentLocation()" class="column fa fa-location-arrow fa-border" aria-hidden="true" style="cursor:pointer;font-size:20px;"></button>
+        <input class='column' id='textinput' type="text" style='line-height:25px;'>
+        <button id='button1' onclick="geocode()" class="columns fa fa-search fa-border" aria-hidden="true" style="cursor:pointer;font-size:20px;"></button>
+    </div>
     <div id="errors" style='text-align:center'></div>
     <div id="today" style='text-align:center'></div>
     <div id="map" style='text-align:center'></div>
     <div id="days" style='text-align:center'></div>
     <div id="graphs" style='text-align:center'></div>
     <script>
-        var loc = document.createElement('INPUT')
-        loc.setAttribute("type", "text");
+        var loc = document.getElementById("textinput")
         loc.setAttribute("value", "Atlanta, GA");
         loc.style['margin-top'] = '10px'
         loc.addEventListener("keyup", function(event) {
@@ -30,7 +30,6 @@
                 document.getElementById("button1").click();
             }
         })
-        document.body.insertBefore(loc, document.getElementById('button1'));
         var HttpClient1 = function() {
             this.get = function(aUrl, aCallback) {
                 var anHttpRequest = new XMLHttpRequest();
