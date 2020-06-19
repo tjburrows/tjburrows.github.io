@@ -14,7 +14,7 @@
         <button id='button1' onclick="geocode()" class="columns fa fa-search fa-border" aria-hidden="true" style="cursor:pointer;font-size:20px;vertical-align:bottom;"></button>
     </div>
     <div id="errors" style='text-align:center'></div>
-    <div id="now" style='text-align:center'></div>
+    <div id="now" style='text-align:left'></div>
     <div id="24h" style='text-align:center'></div>
     <div id="map" style='text-align:center'></div>
     <div id="days" style='text-align:center'></div>
@@ -116,6 +116,9 @@
                     //  Create detailed forecasts
                     client.get(forcastGrid, function(gridResponse) {
                         responseJson = JSON.parse(gridResponse)
+                        if (responseJson == null || responseJson.length == 0) {
+                            printError('Error: Weather at this location is not available from Weather.gov.')
+                        }
                         props = responseJson.properties
                         console.log("griddata:")
                         console.log(props)
@@ -130,15 +133,18 @@
                         elem = document.getElementById("map").appendChild(div)
                         
                         //  Calculate center point
+                        
                         pointsLon = []
                         pointsLat = []
                         center = [0,0]
+                        
                         for (var i = 0; i < geometry.length-1; i++) {
                             pointsLon.push(geometry[i][0])
                             pointsLat.push(geometry[i][1])
                             center[0] += geometry[i][0]
                             center[1] += geometry[i][1]
                         }
+                        
                         center[0] /= geometry.length-1
                         center[1] /= geometry.length-1
                         var mapData = [{
@@ -174,6 +180,15 @@
                             dayProps = JSON.parse(forecastResponse).properties
                             console.log("daydata:")
                             console.log(dayProps)
+                            
+                            
+                            //  Print text summary of present forecast
+                            clearID('now')
+                            nowDiv = document.getElementById('now')
+                            
+                            var p1 = document.createElement("p");
+                            var summary = document.createTextNode(dayProps.periods[0].name + ': ' + dayProps.periods[0].detailedForecast);
+                            nowDiv.appendChild(summary)
                             
                             //  Determine number of days that hvae both min and max temperature
                             numBars = Math.min(props.maxTemperature.values.length, props.minTemperature.values.length)
