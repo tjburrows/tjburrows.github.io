@@ -7,10 +7,10 @@
   </head>
   
   <body style='text-align:center'>
-    <div class="row" id="search" style='text-align:center; vertical-align:bottom;'>
-        <button id='button2' onclick="getCurrentLocation()" class="column fa fa-location-arrow fa-border" aria-hidden="true" style="cursor:pointer;font-size:20px;vertical-align:bottom;"></button>
-        <input class='column' id='textinput' type="text" style='line-height:25px;vertical-align:bottom;'>
-        <button id='button1' onclick="geocode()" class="columns fa fa-search fa-border" aria-hidden="true" style="cursor:pointer;font-size:20px;vertical-align:bottom;"></button>
+    <div class="row" id="search" style='margin-top:20px; margin-bottom:20px;display:flex;height:32px;align-items:center;justify-content:center;'>
+        <button id='button2' onclick="getCurrentLocation()" class="fa fa-location-arrow fa-border" style="cursor:pointer;height:100%;"></button>
+        <input id='textinput' type="text" style='height:100%;'>
+        <button id='button1' onclick="geocode()" class="fa fa-search fa-border" style="cursor:pointer;height:100%;"></button>
     </div>
     <div id="errors" style='text-align:center'></div>
     <div id="now" style='text-align:left' class='row'></div>
@@ -23,7 +23,6 @@
         //  Create text search box
         var loc = document.getElementById("textinput")
         loc.setAttribute("value", "Atlanta, GA");
-        loc.style['margin-top'] = '10px'
         
         //  Allow pressing enter to submit
         loc.addEventListener("keyup", function(event) {
