@@ -13,7 +13,7 @@
         <button id='button1' onclick="geocode()" class="columns fa fa-search fa-border" aria-hidden="true" style="cursor:pointer;font-size:20px;vertical-align:bottom;"></button>
     </div>
     <div id="errors" style='text-align:center'></div>
-    <div id="now" style='text-align:left'></div>
+    <div id="now" style='text-align:left' class='row'></div>
     <div id="24h" style='text-align:center'></div>
     <div id="map" style='text-align:center'></div>
     <div id="days" style='text-align:center'></div>
@@ -140,7 +140,7 @@
                         //  Plot map
                         clearID('map')
                         var div = document.createElement('map1');
-                        div.style.width = "95%";
+                        div.style.width = "90%";
                         div.style.display = "inline-block";
                         elem = document.getElementById("map").appendChild(div)
                         
@@ -196,14 +196,29 @@
                             //  Print text summary of present forecast
                             clearID('now')
                             nowDiv = document.getElementById('now')
+                            nowDiv.style.display = 'flex'
+                            var leftColumn = document.createElement("div");
+                            leftColumn.style.width='5%'
+                            leftColumn.classList.add('column')
+                            nowDiv.appendChild(leftColumn)
+                            var middleColumn = document.createElement("div");
+                            middleColumn.style.width='90%'
+                            middleColumn.classList.add('column')
+                            
                             var p1 = document.createElement("p");
+                            p1.classList.add('column')
                             var bold = document.createElement("b");
                             var prefix = document.createTextNode(dayProps.periods[0].name + ': ')
                             var summary = document.createTextNode(dayProps.periods[0].detailedForecast);
                             bold.appendChild(prefix)
                             p1.appendChild(bold)
                             p1.appendChild(summary)
-                            nowDiv.appendChild(p1)
+                            middleColumn.appendChild(p1)
+                            nowDiv.appendChild(middleColumn)
+                            var rightColumn = document.createElement("div");
+                            rightColumn.style.width='5%'
+                            rightColumn.classList.add('column')
+                            nowDiv.appendChild(rightColumn)
                             
                             //  Match min temperature to max temperature
                             numBars = Math.min(props.maxTemperature.values.length, props.minTemperature.values.length)
@@ -357,10 +372,8 @@
                                                 entryStruct.time.push(currentTime)
                                                 entryStruct.data.push(props[field].values[i].value)
                                             }
-                                            
                                         }
                                     }
-                                    
                                 }
                                 if (entryStruct.unit.includes('degC')) {
                                     for (var i = 0; i < entryStruct.data.length; i++) {
