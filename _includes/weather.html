@@ -206,60 +206,66 @@
                             p1.appendChild(summary)
                             nowDiv.appendChild(p1)
                             
-                            //  Determine number of days that hvae both min and max temperature
+                            //  Match min temperature to max temperature
                             numBars = Math.min(props.maxTemperature.values.length, props.minTemperature.values.length)
-                            
-                            //  Set offsets in indexes
-                            minOffset = props.minTemperature.values.length - numBars
-                            maxOffset = props.maxTemperature.values.length - numBars
+                            if (props.minTemperature.values.length !== props.maxTemperature.values.length) {
+                                firstDateMin = new Date(props.minTemperature.values[0].validTime.split('/')[0])
+                                firstDateMax = new Date(props.maxTemperature.values[0].validTime.split('/')[0])
+                                if (firstDateMin.getDate() == firstDateMax.getDate()) {
+                                    props.minTemperature.values = props.minTemperature.values.slice(0,numBars)
+                                    props.maxTemperature.values = props.maxTemperature.values.slice(0,numBars)
+                                }
+                                else {
+                                    props.minTemperature.values = props.minTemperature.values.slice(props.minTemperature.values.length - numbars)
+                                    props.maxTemperature.values = props.minTemperature.values.slice(props.maxTemperature.values.length - numbars)
+                                }
+                            }
                             
                             //  Convert celcius to farenheit
                             if (props.minTemperature.uom.includes('degC')) {
                                 for (var i = 0; i < numBars; i++) {
-                                    props.minTemperature.values[i+minOffset].value = c2f(props.minTemperature.values[i+minOffset].value)
-                                    props.maxTemperature.values[i+maxOffset].value = c2f(props.maxTemperature.values[i+maxOffset].value)
+                                    props.minTemperature.values[i].value = c2f(props.minTemperature.values[i].value)
+                                    props.maxTemperature.values[i].value = c2f(props.maxTemperature.values[i].value)
                                 }
                             }
                            
                             //   Find common min and max for all bar charts
-                            var minT = props.minTemperature.values[minOffset].value
-                            var maxT = props.maxTemperature.values[maxOffset].value
+                            var minT = props.minTemperature.values[0].value
+                            var maxT = props.maxTemperature.values[0].value
                             for (var i = 1; i < numBars; i++) {
-                                if (props.minTemperature.values[i+minOffset].value < minT)
-                                    minT = props.minTemperature.values[i+minOffset].value
-                                if (props.maxTemperature.values[i+maxOffset].value > maxT)
-                                    maxT = props.maxTemperature.values[i+maxOffset].value
+                                if (props.minTemperature.values[i].value < minT)
+                                    minT = props.minTemperature.values[i].value
+                                if (props.maxTemperature.values[i].value > maxT)
+                                    maxT = props.maxTemperature.values[i].value
                             }
                             
                             //  Clear div before populating
                             clearID('days')
                             for (var i = 0; i < numBars; i++) {
                             
-                                iMin = i + minOffset
-                                iMax = i + maxOffset
-                                validDay = props.minTemperature.values[iMin].validTime.split('T')[0]
+                                validDay = props.minTemperature.values[i].validTime.split('T')[0]
                                 
                                 trace1 = {
-                                    x: [props.minTemperature.values[iMin].value],
+                                    x: [props.minTemperature.values[i].value],
                                     y: [validDay],
                                     type: 'bar',
                                     orientation: 'h',
                                     marker: {
                                         color: 'rgba(1,1,1,0.0)'
                                     },
-                                    text: Math.round(props.minTemperature.values[iMin].value).toString() + degreeSymbol,
+                                    text: Math.round(props.minTemperature.values[i].value).toString() + degreeSymbol,
                                     textposition: 'outside',
                                 }
                                 
                                 trace2 = {
-                                    x:  [props.maxTemperature.values[iMax].value-props.minTemperature.values[iMin].value],
+                                    x:  [props.maxTemperature.values[i].value-props.minTemperature.values[i].value],
                                     y: [validDay],
                                     type: 'bar',
                                     marker: {
                                         color: '#737373'
                                     },
                                     orientation: 'h',
-                                    text: Math.round(props.maxTemperature.values[iMax].value).toString() + degreeSymbol,
+                                    text: Math.round(props.maxTemperature.values[i].value).toString() + degreeSymbol,
                                     textposition: 'outside',
                                 }
                                 
@@ -359,7 +365,7 @@
                                 }
                                 if (entryStruct.unit.includes('degC')) {
                                     for (var i = 0; i < entryStruct.data.length; i++) {
-                                        entryStruct.data[i] = entryStruct.data[i] * 9.0 / 5.0 + 32
+                                        entryStruct.data[i] = c2f(entryStruct.data[i])
                                     }
                                     entryStruct.unit = degreeSymbol + 'F'
                                 }
