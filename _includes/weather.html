@@ -5,6 +5,7 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   </head>
+  
   <body style='text-align:center'>
     <header>Travis's Weather Forecast from Weather.gov</header>
     <div class="row" id="search" style='text-align:center; vertical-align:bottom;'>
@@ -13,23 +14,27 @@
         <button id='button1' onclick="geocode()" class="columns fa fa-search fa-border" aria-hidden="true" style="cursor:pointer;font-size:20px;vertical-align:bottom;"></button>
     </div>
     <div id="errors" style='text-align:center'></div>
-    <div id="today" style='text-align:center'></div>
+    <div id="now" style='text-align:center'></div>
+    <div id="24h" style='text-align:center'></div>
     <div id="map" style='text-align:center'></div>
     <div id="days" style='text-align:center'></div>
     <div id="graphs" style='text-align:center'></div>
     <script>
+    
+        //  Create text search box
         var loc = document.getElementById("textinput")
         loc.setAttribute("value", "Atlanta, GA");
         loc.style['margin-top'] = '10px'
+        
+        //  Allow pressing enter to submit
         loc.addEventListener("keyup", function(event) {
-            // Number 13 is the "Enter" key on the keyboard
             if (event.keyCode === 13) {
-                // Cancel the default action, if needed
                 event.preventDefault();
-                // Trigger the button element with a click
                 document.getElementById("button1").click();
             }
         })
+        
+        //  get request version 1
         var HttpClient1 = function() {
             this.get = function(aUrl, aCallback) {
                 var anHttpRequest = new XMLHttpRequest();
@@ -43,6 +48,7 @@
             }
         }
         
+        //  Get request version 2
         var HttpClient2 = function() {
             this.get = function(aUrl, aCallback) {
                 var anHttpRequest = new XMLHttpRequest();
@@ -61,6 +67,7 @@
             }
         }
         
+        //  Get current location and run weather
         function getCurrentLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
@@ -69,6 +76,7 @@
             }
         }
         
+        //  Clear all child divs of an id
         function clearID(id) {
             node = document.getElementById(id)
             if (node !== null) {
@@ -78,17 +86,30 @@
             }
         }
         
+        //  Convert Celcius to Fahrenheit
+        function c2f(celcius) {
+            return celcius * 9.0 / 5.0 + 32.0
+        }
+        
+        
+        //  Get weather data
         function getWeather(lat, lon) {
             var locString = lat + ',' + lon
             var client = new HttpClient2();
             client.get('https://api.weather.gov/points/' + locString, function(pointsResponse) {
                 responseJson = JSON.parse(pointsResponse)
+                
+                //  clear any existing errors
                 clearID('errors')
+                
+                //  Print error if weather not found
                 if (responseJson == null || responseJson.length == 0) {
                     printError('Error: Weather at this location is not available from Weather.gov.')
                 }
                 else {
                     responseJson = JSON.parse(pointsResponse)
+                    console.log("point:")
+                    console.log(responseJson)
                     forcastDay = responseJson.properties.forecast
                     forcastGrid = responseJson.properties.forecastGridData
                     
@@ -96,6 +117,7 @@
                     client.get(forcastGrid, function(gridResponse) {
                         responseJson = JSON.parse(gridResponse)
                         props = responseJson.properties
+                        console.log("griddata:")
                         console.log(props)
                         timeLength = props.temperature.values.length
                         geometry = responseJson.geometry.coordinates[0]
@@ -106,6 +128,8 @@
                         div.style.width = "95vw";
                         div.style.display = "inline-block";
                         elem = document.getElementById("map").appendChild(div)
+                        
+                        //  Calculate center point
                         pointsLon = []
                         pointsLat = []
                         center = [0,0]
@@ -139,7 +163,8 @@
                         }
                         var mapConfig = {
                             responsive: true,
-                            staticPlot: true,
+                            displayModeBar: false,
+                            staticPlot: false,
                         }
                         Plotly.newPlot(elem, mapData, mapLayout, mapConfig)
                         
@@ -147,43 +172,60 @@
                         //  Create day by day summary
                         client.get(forcastDay, function(forecastResponse) {
                             dayProps = JSON.parse(forecastResponse).properties
-                            for (var i = 0; i < props.maxTemperature.values.length; i++) {
-                                props.minTemperature.values[i].value = props.minTemperature.values[i].value * (9./5.) + 32.
-                                props.maxTemperature.values[i].value = props.maxTemperature.values[i].value * (9./5.) + 32.
+                            console.log("daydata:")
+                            console.log(dayProps)
+                            
+                            //  Determine number of days that hvae both min and max temperature
+                            numBars = Math.min(props.maxTemperature.values.length, props.minTemperature.values.length)
+                            
+                            //  Set offsets in indexes
+                            minOffset = props.minTemperature.values.length - numBars
+                            maxOffset = props.maxTemperature.values.length - numBars
+                            
+                            //  Convert celcius to farenheit
+                            for (var i = 0; i < numBars; i++) {
+                                props.minTemperature.values[i+minOffset].value = c2f(props.minTemperature.values[i+minOffset].value)
+                                props.maxTemperature.values[i+maxOffset].value = c2f(props.maxTemperature.values[i+maxOffset].value)
                             }
-                            var minT = props.minTemperature.values[0].value
-                            var maxT = props.maxTemperature.values[0].value
-                            for (var i = 1; i < props.maxTemperature.values.length; i++) {
-                                if (props.minTemperature.values[i].value < minT)
-                                    minT = props.minTemperature.values[i].value
-                                if (props.maxTemperature.values[i].value > maxT)
-                                    maxT = props.maxTemperature.values[i].value
+                            
+                            var minT = props.minTemperature.values[minOffset].value
+                            var maxT = props.maxTemperature.values[maxOffset].value
+                            
+                            for (var i = 1; i < numBars; i++) {
+                                if (props.minTemperature.values[i+minOffset].value < minT)
+                                    minT = props.minTemperature.values[i+minOffset].value
+                                if (props.maxTemperature.values[i+maxOffset].value > maxT)
+                                    maxT = props.maxTemperature.values[i+maxOffset].value
                             }
                             clearID('days')
-                            for (var i = 0; i < props.maxTemperature.values.length; i++) {
-                                validDay = props.minTemperature.values[i].validTime.split('T')[0]
+                            
+                            for (var i = 0; i < numBars; i++) {
+                            
+                                iMin = i + minOffset
+                                iMax = i + maxOffset
+                                validDay = props.minTemperature.values[iMin].validTime.split('T')[0]
                                 
                                 trace1 = {
-                                    x: [props.minTemperature.values[i].value],
+                                    x: [props.minTemperature.values[iMin].value],
                                     y: [validDay],
                                     type: 'bar',
                                     orientation: 'h',
                                     marker: {
                                         color: 'rgba(1,1,1,0.0)'
                                     },
-                                    text: Math.round(props.minTemperature.values[i].value).toString() + String.fromCharCode(176),
+                                    text: Math.round(props.minTemperature.values[iMin].value).toString() + String.fromCharCode(176),
                                     textposition: 'outside',
                                 }
                                 
                                 trace2 = {
-                                    x:  [props.maxTemperature.values[i].value-props.minTemperature.values[i].value],
+                                    x:  [props.maxTemperature.values[iMax].value-props.minTemperature.values[iMin].value],
                                     y: [validDay],
                                     type: 'bar',
                                     marker: {
                                         color: '#737373'
                                     },
                                     orientation: 'h',
-                                    text: Math.round(props.maxTemperature.values[i].value).toString() + String.fromCharCode(176),
+                                    text: Math.round(props.maxTemperature.values[iMax].value).toString() + String.fromCharCode(176),
                                     textposition: 'outside',
                                 }
                                 
@@ -247,19 +289,36 @@
                             if (field in props) {
                                 numPoints = props[field].values.length
                                 entryStruct = {'time':new Array(), 'data':new Array(), 'unit':''}
+                                
+                                //  Extract parameter unit
                                 if ('uom' in props[field])
-                                    entryStruct.unit = props[field].uom.slice(5)
+                                    entryStruct.unit = props[field].uom.split(':')[1]
+                                    
+                                //  Get date of today, and date in 24 hours
+                                today = new Date()
+                                todayPlus24h = new Date()
+                                todayPlus24h.setDate(todayPlus24h.getDate() + 1)
+                                
+                                //  Create array of data
                                 for (var i = 0; i < numPoints; i++) {
                                     iso8601String = props[field].values[i].validTime
                                     startTime = Date.parse(iso8601String.split('/')[0])
-                                    if (i < numPoints-1) {
-                                        endTime = Date.parse(props[field].values[i+1].validTime.split('/')[0])
-                                        hours = (endTime - startTime) / (1000 * 60 * 60)
-                                        if (hours > 1) {
-                                            for (var h = 1; h < hours; h++) {
-                                                currentTime = new Date(startTime)
-                                                currentTime.setHours(currentTime.getHours() + h)
-                                                entryStruct.time.push(currentTime)
+                                    if (startTime > today && startTime < todayPlus24h) {
+                                        if (i < numPoints-1) {
+                                            endTime = Date.parse(props[field].values[i+1].validTime.split('/')[0])
+                                            if (endTime > todayPlus24h)
+                                                endTime = todayPlus24h
+                                            hours = (endTime - startTime) / (1000 * 60 * 60)
+                                            if (hours > 1) {
+                                                for (var h = 1; h < hours; h++) {
+                                                    currentTime = new Date(startTime)
+                                                    currentTime.setHours(currentTime.getHours() + h)
+                                                    entryStruct.time.push(currentTime)
+                                                    entryStruct.data.push(props[field].values[i].value)
+                                                }
+                                            }
+                                            else {
+                                                entryStruct.time.push(startTime)
                                                 entryStruct.data.push(props[field].values[i].value)
                                             }
                                         }
@@ -268,12 +327,9 @@
                                             entryStruct.data.push(props[field].values[i].value)
                                         }
                                     }
-                                    else {
-                                        entryStruct.time.push(startTime)
-                                        entryStruct.data.push(props[field].values[i].value)
-                                    }
+                                    
                                 }
-                                if (entryStruct.unit == 'degC') {
+                                if (entryStruct.unit.includes('degC')) {
                                     for (var i = 0; i < entryStruct.data.length; i++) {
                                         entryStruct.data[i] = entryStruct.data[i] * 9.0 / 5.0 + 32
                                     }
