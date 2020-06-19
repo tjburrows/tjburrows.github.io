@@ -194,14 +194,17 @@
                             console.log("daydata:")
                             console.log(dayProps)
                             
-                            
                             //  Print text summary of present forecast
                             clearID('now')
                             nowDiv = document.getElementById('now')
-                            
                             var p1 = document.createElement("p");
-                            var summary = document.createTextNode(dayProps.periods[0].name + ': ' + dayProps.periods[0].detailedForecast);
-                            nowDiv.appendChild(summary)
+                            var bold = document.createElement("b");
+                            var prefix = document.createTextNode(dayProps.periods[0].name + ': ')
+                            var summary = document.createTextNode(dayProps.periods[0].detailedForecast);
+                            bold.appendChild(prefix)
+                            p1.appendChild(bold)
+                            p1.appendChild(summary)
+                            nowDiv.appendChild(p1)
                             
                             //  Determine number of days that hvae both min and max temperature
                             numBars = Math.min(props.maxTemperature.values.length, props.minTemperature.values.length)
