@@ -7,17 +7,17 @@
   </head>
   
   <body style='text-align:center'>
-    <div class="row" id="search" style='margin-top:20px; margin-bottom:20px;display:flex;height:32px;align-items:center;justify-content:center;'>
+    <div id="search" style='margin-top:20px; margin-bottom:20px;display:flex;height:32px;align-items:center;justify-content:center;'>
         <button id='button2' onclick="getCurrentLocation()" class="fa fa-location-arrow fa-border" style="cursor:pointer;height:100%;"></button>
         <input id='textinput' type="text" style='height:100%;'>
         <button id='button1' onclick="geocode()" class="fa fa-search fa-border" style="cursor:pointer;height:100%;"></button>
     </div>
-    <div id="errors" style='text-align:center'></div>
-    <div id="now" style='text-align:left' class='row'></div>
-    <div id="24h" style='text-align:center'></div>
-    <div id="map" style='text-align:center'></div>
-    <div id="days" style='text-align:center'></div>
-    <div id="graphs" style='text-align:center'></div>
+    <div id="errors" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
+    <div id="now" style='text-align:left; max-width:1000px;margin:0 auto;'></div>
+    <div id="24h" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
+    <div id="map" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
+    <div id="days" style='text-align:center; max-width:700px;margin:0 auto;'></div>
+    <div id="graphs" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
     <script>
     
         //  Create text search box
@@ -139,7 +139,7 @@
                         //  Plot map
                         clearID('map')
                         var div = document.createElement('map1');
-                        div.style.width = "90%";
+                        div.style.width = "100%";
                         div.style.display = "inline-block";
                         elem = document.getElementById("map").appendChild(div)
                         
@@ -196,14 +196,8 @@
                             clearID('now')
                             nowDiv = document.getElementById('now')
                             nowDiv.style.display = 'flex'
-                            var leftColumn = document.createElement("div");
-                            leftColumn.style.width='5%'
-                            leftColumn.classList.add('column')
-                            nowDiv.appendChild(leftColumn)
                             var middleColumn = document.createElement("div");
-                            middleColumn.style.width='90%'
-                            middleColumn.classList.add('column')
-                            
+                            middleColumn.style.width='100%'                            
                             var p1 = document.createElement("p");
                             p1.classList.add('column')
                             var bold = document.createElement("b");
@@ -214,10 +208,6 @@
                             p1.appendChild(summary)
                             middleColumn.appendChild(p1)
                             nowDiv.appendChild(middleColumn)
-                            var rightColumn = document.createElement("div");
-                            rightColumn.style.width='5%'
-                            rightColumn.classList.add('column')
-                            nowDiv.appendChild(rightColumn)
                             
                             //  Match min temperature to max temperature
                             numBars = Math.min(props.maxTemperature.values.length, props.minTemperature.values.length)
@@ -286,7 +276,7 @@
                                     paper_bgcolor:'rgba(0,0,0,0)',
                                     plot_bgcolor:'rgba(0,0,0,0)',
                                     showlegend: false,
-                                    margin: {b:0, t:7},
+                                    margin: {b:0, t:7,l:40,r:0},
                                     height: 35,
                                     xaxis: {
                                         showgrid: false,
@@ -294,7 +284,7 @@
                                         zeroline: false,
                                         fixedrange: true,
                                         showticklabels: false,
-                                        range: [minT - 3, maxT + 3],
+                                        range: [minT-3, maxT+3],
                                     },
                                     yaxis: {
                                         showline: false,
@@ -312,19 +302,29 @@
                                     displayModeBar: false,
                                     staticPlot: true,
                                 }
+                                console.log(validDay)
+                                test = new Date(validDay)
+                                console.log(test)
+                                
+                                if (i == 0) {
+                                    if ((new Date(validDay)).getUTCDate() == new Date().getDate()) {
+                                        trace1.y = ['<b>Today</b>']
+                                        trace2.y = ['<b>Today</b>']
+                                    }
+                                }
                                 
                                 var div = document.createElement('button');
                                 div.style.outline = 'none'
                                 div.style['background-color'] = 'Transparent'
                                 div.style.cursor = 'Pointer'
                                 div.style.border='none'
-                                div.style.width = "90%";
+                                div.style.width = "100%";
                                 div.style.display = "inline-block";
                                 elem = document.getElementById("days").appendChild(div)
                                 elem.classList.add('collapsible')
                                 
                                 var div = document.createElement('div');
-                                div.style.width = "90%";
+                                div.style.width = "100%";
                                 div.style.display = "inline-block";
                                 div.class = 'collapsible'
                                 div.type = 'button'
