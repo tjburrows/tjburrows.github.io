@@ -1,7 +1,12 @@
 <html lang="">
   <head>
     <meta charset="utf-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <style>
+        button div:hover {
+            background-color: #d3d3d3;
+        }
+    </style>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   </head>
@@ -199,7 +204,6 @@
                             var middleColumn = document.createElement("div");
                             middleColumn.style.width='100%'                            
                             var p1 = document.createElement("p");
-                            p1.classList.add('column')
                             var bold = document.createElement("b");
                             var prefix = document.createTextNode(dayProps.periods[0].name + ': ')
                             var summary = document.createTextNode(dayProps.periods[0].detailedForecast);
@@ -276,7 +280,7 @@
                                     paper_bgcolor:'rgba(0,0,0,0)',
                                     plot_bgcolor:'rgba(0,0,0,0)',
                                     showlegend: false,
-                                    margin: {b:0, t:7,l:40,r:0},
+                                    margin: {b:3, t:3,l:40,r:0},
                                     height: 35,
                                     xaxis: {
                                         showgrid: false,
@@ -302,9 +306,6 @@
                                     displayModeBar: false,
                                     staticPlot: true,
                                 }
-                                console.log(validDay)
-                                test = new Date(validDay)
-                                console.log(test)
                                 
                                 if (i == 0) {
                                     if ((new Date(validDay)).getUTCDate() == new Date().getDate()) {
@@ -323,6 +324,9 @@
                                 elem = document.getElementById("days").appendChild(div)
                                 elem.classList.add('collapsible')
                                 
+                                var content = document.createElement('div')
+                                
+                                
                                 var div = document.createElement('div');
                                 div.style.width = "100%";
                                 div.style.display = "inline-block";
@@ -330,8 +334,6 @@
                                 div.type = 'button'
                                 elem = elem.appendChild(div)
                                 Plotly.newPlot(elem, [trace1,trace2], layout, config);
-                                elem.class = 'collapsible'
-                                elem.type = 'button'
                             }
                         })
                         
