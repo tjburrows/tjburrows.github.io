@@ -1,6 +1,7 @@
 ---
-layout: raw
+layout: default
 permalink: /weather/
-title: Weather Forecast from Weather.gov
+title: Forecast from Weather.gov
 ---
+## Weather.gov Forecast
 {% include weather.html %}

@@ -7,7 +7,6 @@
   </head>
   
   <body style='text-align:center'>
-    <header>Travis's Weather Forecast from Weather.gov</header>
     <div class="row" id="search" style='text-align:center; vertical-align:bottom;'>
         <button id='button2' onclick="getCurrentLocation()" class="column fa fa-location-arrow fa-border" aria-hidden="true" style="cursor:pointer;font-size:20px;vertical-align:bottom;"></button>
         <input class='column' id='textinput' type="text" style='line-height:25px;vertical-align:bottom;'>
@@ -141,7 +140,7 @@
                         //  Plot map
                         clearID('map')
                         var div = document.createElement('map1');
-                        div.style.width = "95vw";
+                        div.style.width = "95%";
                         div.style.display = "inline-block";
                         elem = document.getElementById("map").appendChild(div)
                         
@@ -305,13 +304,13 @@
                                 div.style['background-color'] = 'Transparent'
                                 div.style.cursor = 'Pointer'
                                 div.style.border='none'
-                                div.style.width = "90vw";
+                                div.style.width = "90%";
                                 div.style.display = "inline-block";
                                 elem = document.getElementById("days").appendChild(div)
                                 elem.classList.add('collapsible')
                                 
                                 var div = document.createElement('div');
-                                div.style.width = "90vw";
+                                div.style.width = "90%";
                                 div.style.display = "inline-block";
                                 div.class = 'collapsible'
                                 div.type = 'button'
@@ -391,7 +390,7 @@
                         for (var key of Object.keys(dataStruct)) {
                             // Add plot div
                             var div = document.createElement(key);
-                            div.style.width = "100vw";
+                            div.style.width = "100%";
                             div.style.display = "inline-block";
                             elem = document.getElementById("graphs").appendChild(div)
                             title = key
