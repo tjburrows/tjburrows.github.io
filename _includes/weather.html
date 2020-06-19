@@ -78,7 +78,7 @@
         
         //  Clear all child divs of an id
         function clearID(id) {
-            node = document.getElementById(id)
+            var node = document.getElementById(id)
             if (node !== null) {
                 while (node.hasChildNodes()) {
                     node.removeChild(node.lastChild);
@@ -91,6 +91,17 @@
             return celcius * 9.0 / 5.0 + 32.0
         }
         
+        const dayFind = /(\d+)D/
+        const hourFind = /(\d+)H/
+        function parseDuration(string) {
+            var hourOffset = 0
+            if (string.includes('D'))
+                hourOffset += parseInt(string.match(dayFind)[1]) * 24
+            if (string.includes('H'))
+                hourOffset += parseInt(string.match(hourFind)[1])
+            return hourOffset
+        }
+        
         
         //  Get weather data
         function getWeather(lat, lon) {
@@ -98,7 +109,7 @@
             var client = new HttpClient2();
             client.get('https://api.weather.gov/points/' + locString, function(pointsResponse) {
                 responseJson = JSON.parse(pointsResponse)
-                
+                degreeSymbol = String.fromCharCode(176)
                 //  clear any existing errors
                 clearID('errors')
                 
@@ -116,6 +127,8 @@
                     //  Create detailed forecasts
                     client.get(forcastGrid, function(gridResponse) {
                         responseJson = JSON.parse(gridResponse)
+                        
+                        //  Print error if data not available
                         if (responseJson == null || responseJson.length == 0) {
                             printError('Error: Weather at this location is not available from Weather.gov.')
                         }
@@ -198,22 +211,25 @@
                             maxOffset = props.maxTemperature.values.length - numBars
                             
                             //  Convert celcius to farenheit
-                            for (var i = 0; i < numBars; i++) {
-                                props.minTemperature.values[i+minOffset].value = c2f(props.minTemperature.values[i+minOffset].value)
-                                props.maxTemperature.values[i+maxOffset].value = c2f(props.maxTemperature.values[i+maxOffset].value)
+                            if (props.minTemperature.uom.includes('degC')) {
+                                for (var i = 0; i < numBars; i++) {
+                                    props.minTemperature.values[i+minOffset].value = c2f(props.minTemperature.values[i+minOffset].value)
+                                    props.maxTemperature.values[i+maxOffset].value = c2f(props.maxTemperature.values[i+maxOffset].value)
+                                }
                             }
-                            
+                           
+                            //   Find common min and max for all bar charts
                             var minT = props.minTemperature.values[minOffset].value
                             var maxT = props.maxTemperature.values[maxOffset].value
-                            
                             for (var i = 1; i < numBars; i++) {
                                 if (props.minTemperature.values[i+minOffset].value < minT)
                                     minT = props.minTemperature.values[i+minOffset].value
                                 if (props.maxTemperature.values[i+maxOffset].value > maxT)
                                     maxT = props.maxTemperature.values[i+maxOffset].value
                             }
-                            clearID('days')
                             
+                            //  Clear div before populating
+                            clearID('days')
                             for (var i = 0; i < numBars; i++) {
                             
                                 iMin = i + minOffset
@@ -228,7 +244,7 @@
                                     marker: {
                                         color: 'rgba(1,1,1,0.0)'
                                     },
-                                    text: Math.round(props.minTemperature.values[iMin].value).toString() + String.fromCharCode(176),
+                                    text: Math.round(props.minTemperature.values[iMin].value).toString() + degreeSymbol,
                                     textposition: 'outside',
                                 }
                                 
@@ -240,7 +256,7 @@
                                         color: '#737373'
                                     },
                                     orientation: 'h',
-                                    text: Math.round(props.maxTemperature.values[iMax].value).toString() + String.fromCharCode(176),
+                                    text: Math.round(props.maxTemperature.values[iMax].value).toString() + degreeSymbol,
                                     textposition: 'outside',
                                 }
                                 
@@ -298,7 +314,7 @@
                         })
                         
                         //  Generate data arrays
-                        fields = ['temperature','probabilityOfPrecipitation', 'quantitativePrecipitation','relativeHumidity', 'dewpoint']
+                        fields = ['temperature','probabilityOfPrecipitation', 'quantitativePrecipitation', 'dewpoint','relativeHumidity']
                         dataStruct = {}
                         fields.forEach(function (field, index) {
                             if (field in props) {
@@ -311,35 +327,29 @@
                                     
                                 //  Get date of today, and date in 24 hours
                                 today = new Date()
+                                today.setHours(today.getHours()-1)
                                 todayPlus24h = new Date()
                                 todayPlus24h.setDate(todayPlus24h.getDate() + 1)
                                 
                                 //  Create array of data
                                 for (var i = 0; i < numPoints; i++) {
                                     iso8601String = props[field].values[i].validTime
-                                    startTime = Date.parse(iso8601String.split('/')[0])
-                                    if (startTime > today && startTime < todayPlus24h) {
-                                        if (i < numPoints-1) {
-                                            endTime = Date.parse(props[field].values[i+1].validTime.split('/')[0])
-                                            if (endTime > todayPlus24h)
-                                                endTime = todayPlus24h
-                                            hours = (endTime - startTime) / (1000 * 60 * 60)
-                                            if (hours > 1) {
-                                                for (var h = 1; h < hours; h++) {
-                                                    currentTime = new Date(startTime)
-                                                    currentTime.setHours(currentTime.getHours() + h)
-                                                    entryStruct.time.push(currentTime)
-                                                    entryStruct.data.push(props[field].values[i].value)
-                                                }
-                                            }
-                                            else {
-                                                entryStruct.time.push(startTime)
+                                    
+                                    isoSplit = iso8601String.split('/')
+                                    startTime = new Date(isoSplit[0])
+                                    duration = parseDuration(isoSplit[1])
+                                    
+                                    //  Only plot next 24 hours
+                                    if (startTime >= today && startTime < todayPlus24h) {
+                                        //  Repeat value for specified number of hours
+                                        for (var h = 0; h < duration; h++) {
+                                            currentTime = new Date(startTime)
+                                            currentTime.setHours(currentTime.getHours() + h)
+                                            if (currentTime <= todayPlus24h) {
+                                                entryStruct.time.push(currentTime)
                                                 entryStruct.data.push(props[field].values[i].value)
                                             }
-                                        }
-                                        else {
-                                            entryStruct.time.push(startTime)
-                                            entryStruct.data.push(props[field].values[i].value)
+                                            
                                         }
                                     }
                                     
@@ -348,8 +358,10 @@
                                     for (var i = 0; i < entryStruct.data.length; i++) {
                                         entryStruct.data[i] = entryStruct.data[i] * 9.0 / 5.0 + 32
                                     }
-                                    entryStruct.unit = 'degF'
+                                    entryStruct.unit = degreeSymbol + 'F'
                                 }
+                                else if (entryStruct.unit.includes('degF'))
+                                    entryStruct.unit = degreeSymbol + 'F'
                                 if (entryStruct.unit == 'mm') {
                                     for (var i = 0; i < entryStruct.data.length; i++) {
                                         entryStruct.data[i] = entryStruct.data[i] / 25.4
@@ -417,6 +429,7 @@
             })
         }
         
+        //  Prints specified error
         function printError(message) {
             var node = document.createTextNode(message)
             document.getElementById("errors").appendChild(node)
