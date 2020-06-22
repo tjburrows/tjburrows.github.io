@@ -25,11 +25,12 @@
   
   <body style='text-align:center'>
     <div id="search" style='margin-top:20px;display:flex;height:32px;align-items:center;justify-content:center;max-width:500px;margin:0 auto; margin-bottom:20px'>
-        <button id='button2' onclick="getCurrentLocation()" class="fa fa-location-arrow fa-border" style="cursor:pointer;height:100%;"></button>
+        <button id='button1' onclick="getCurrentLocation()" class="fa fa-location-arrow fa-border" style="cursor:pointer;height:100%;"></button>
         <input id='textinput' type="text" style='height:100%;width:90%;'>
-        <button id='button1' onclick="geocode()" class="fa fa-search fa-border" style="cursor:pointer;height:100%;"></button>
+        <button id='button2' onclick="geocode()" class="fa fa-search fa-border" style="cursor:pointer;height:100%;"></button>
+        <button id='button3' onclick="help()" class="fa fa-question fa-border" style="cursor:pointer;height:100%;"></button>
     </div>
-    <div id="errors" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
+    <div id="errors" style='text-align:center; max-width:1000px;margin:0 auto; margin-bottom:20px'></div>
     <div id="now" style='text-align:left; max-width:1000px;margin:0 auto;'></div>
     <div id="24h" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
     <div id="map" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
@@ -45,7 +46,7 @@
         loc.addEventListener("keyup", function(event) {
             if (event.keyCode === 13) {
                 event.preventDefault();
-                document.getElementById("button1").click();
+                document.getElementById("button2").click();
             }
         })
         
@@ -137,6 +138,7 @@
                     printError('Error: Weather at this location is not available from Weather.gov.')
                 }
                 else {
+                    clearID('errors')
                     responseJson = JSON.parse(pointsResponse)
                     console.log("point:")
                     console.log(responseJson)
@@ -451,8 +453,8 @@
             url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json&limit=1'
             client.get(url, function(nomResponse) {
                 responseJson = JSON.parse(nomResponse)
+                clearID('errors')
                 if (responseJson.length == 0) {
-                    clearID('errors')
                     printError('Error: Location not identifiable from \"' + loc.value + '\".  Try again.')
                 }
                 else {
@@ -470,8 +472,8 @@
             url = 'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json'
             client.get(url, function(nomResponse) {
                 responseJson = JSON.parse(nomResponse)
+                clearID('errors')
                 if (responseJson.length == 0) {
-                    clearID('errors')
                     printError('Error: Reverse geocoding failed.  Input: lat=' + lat + ', lon=' + lon)
                 }
                 else {
@@ -479,6 +481,17 @@
                 }
             })
         }
+        var showhelp = true
+        function help() {
+            clearID('errors')
+            if (showhelp == true) {
+                printError('Enter a location by using your current location, the text search box, or double-click on map.')
+                showhelp = false
+            }
+            else
+                showhelp = true
+        }
+        
         geocode()
     </script>
   </body>
