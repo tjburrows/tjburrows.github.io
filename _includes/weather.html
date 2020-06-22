@@ -469,7 +469,7 @@
         
         function reverseGeocode(lat,lon) {
             var client = new HttpClient1();
-            url = 'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json'
+            url = 'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&zoom=14'
             client.get(url, function(nomResponse) {
                 responseJson = JSON.parse(nomResponse)
                 clearID('errors')
