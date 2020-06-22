@@ -24,9 +24,9 @@
   </head>
   
   <body style='text-align:center'>
-    <div id="search" style='margin-top:20px; margin-bottom:20px;display:flex;height:32px;align-items:center;justify-content:center;'>
+    <div id="search" style='margin-top:20px;display:flex;height:32px;align-items:center;justify-content:center;max-width:500px;margin:0 auto; margin-bottom:20px'>
         <button id='button2' onclick="getCurrentLocation()" class="fa fa-location-arrow fa-border" style="cursor:pointer;height:100%;"></button>
-        <input id='textinput' type="text" style='height:100%;'>
+        <input id='textinput' type="text" style='height:100%;width:90%;'>
         <button id='button1' onclick="geocode()" class="fa fa-search fa-border" style="cursor:pointer;height:100%;"></button>
     </div>
     <div id="errors" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
@@ -86,7 +86,7 @@
         function getCurrentLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    getWeather(position.coords.latitude, position.coords.longitude)
+                    getWeather(position.coords.latitude, position.coords.longitude, true)
                 });
             }
         }
@@ -119,7 +119,11 @@
         
         
         //  Get weather data
-        function getWeather(lat, lon) {
+        function getWeather(lat, lon, reverseGeo=false) {
+        
+            if (reverseGeo)
+                reverseGeocode(lat,lon)
+            
             var locString = lat + ',' + lon
             var client = new HttpClient2();
             client.get('https://api.weather.gov/points/' + locString, function(pointsResponse) {
@@ -151,7 +155,6 @@
                         console.log("griddata:")
                         console.log(props)
                         timeLength = props.temperature.values.length
-                        geometry = responseJson.geometry.coordinates[0]
                         
                         //  Plot map
                         clearID('map')
@@ -161,57 +164,20 @@
                         div.style.display = "inline-block";
                         div.id = 'map1'
                         elem = document.getElementById("map").appendChild(div)
-                        
-                        //  Calculate center point
-                        pointsLon = []
-                        pointsLat = []
-                        center = [0,0]
-                        
-                        for (var i = 0; i < geometry.length-1; i++) {
-                            pointsLon.push(geometry[i][0])
-                            pointsLat.push(geometry[i][1])
-                            center[0] += geometry[i][0]
-                            center[1] += geometry[i][1]
-                        }
-                        
-                        center[0] /= geometry.length-1
-                        center[1] /= geometry.length-1
-//                         var mapData = [{
-//                             lon: pointsLon,
-//                             lat: pointsLat,
-//                             type: 'scattermapbox',
-//                             fill: "toself",
-//                             marker: {color: 'red'}
-//                         }]
-//                         var mapLayout = {
-//                             mapbox: {
-//                                 style: 'open-street-map',
-//                                 center: { lon: center[0], lat: center[1] },
-//                                 zoom: 6,
-//                                 paper_bgcolor:'rgba(0,0,0,0)',
-//                                 plot_bgcolor:'rgba(0,0,0,0)',
-//                             },
-//                             modes: 'lines',
-//                             paper_bgcolor:'rgba(0,0,0,0)',
-//                             plot_bgcolor:'rgba(0,0,0,0)',
-//                             margin: {l:0, r:0, b:20, t:20},
-//                         }
-//                         var mapConfig = {
-//                             responsive: true,
-//                             displayModeBar: false,
-//                             staticPlot: false,
-//                         }
-//                         Plotly.newPlot(elem, mapData, mapLayout, mapConfig)
-//                         
-                        var map = L.map("map1").setView([center[1],center[0]], 6);
+
+                        var map = L.map("map1",{doubleClickZoom:false}).setView([lat,lon], 6);
                         var osmAttribution ='Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
                         var leafletRadarAttribution ='<a href="https://github.com/rwev/leaflet-radar">Radar</a>';
                         L.tileLayer(
                                 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                                 {attribution: [osmAttribution,leafletRadarAttribution].join(" | ")}
                         ).addTo(map);
-                        L.marker([center[1],center[0]]).addTo(map);
+                        L.marker([lat,lon]).addTo(map);
                         L.control.radar({}).addTo(map);
+                        map.on('dblclick', function(e) {
+                            getWeather(e.latlng.lat, e.latlng.lng, true)
+                        });
+                        
                         
                         //  Create day by day summary
                         client.get(forcastDay, function(forecastResponse) {
@@ -480,7 +446,7 @@
         }
         
         // Get coordinate of location
-        function geocode(position = {}) {
+        function geocode() {
             var client = new HttpClient1();
             url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json&limit=1'
             client.get(url, function(nomResponse) {
@@ -494,6 +460,22 @@
                     var lon = responseJson[0].lon
                     console.log('Geocode success: ' + loc.value + ' -> (' + lat + ', ' + lon + ')' )
                     getWeather(lat,lon)
+                    
+                }
+            })
+        }
+        
+        function reverseGeocode(lat,lon) {
+            var client = new HttpClient1();
+            url = 'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json'
+            client.get(url, function(nomResponse) {
+                responseJson = JSON.parse(nomResponse)
+                if (responseJson.length == 0) {
+                    clearID('errors')
+                    printError('Error: Reverse geocoding failed.  Input: lat=' + lat + ', lon=' + lon)
+                }
+                else {
+                    document.getElementById("textinput").setAttribute("value", responseJson.display_name);
                 }
             })
         }

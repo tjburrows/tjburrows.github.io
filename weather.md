@@ -3,5 +3,5 @@ layout: default
 permalink: /weather/
 title: Forecast from Weather.gov
 ---
-## Weather.gov Forecast
+### Weather Forecast
 {% include weather.html %}

@@ -1,6 +1,6 @@
 title: Travis J. Burrows
 description: Travis J. Burrows
-sourcecode: false
+sourcecode: https://github.com/tjburrows/tjburrows.github.io
 
 permalink: blog/:year/:month/:day/:title
 exclude: ["Makefile", "README.md"]
