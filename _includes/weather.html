@@ -9,6 +9,18 @@
     </style>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" 
+        href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" 
+        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" 
+        crossorigin=""
+    />
+    <script 
+        src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" 
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" 
+        crossorigin=""
+    ></script>
+    <link rel="stylesheet" href="/css/leaflet-radar.css"/>
+    <script src="/js/leaflet-radar.js"></script>
   </head>
   
   <body style='text-align:center'>
@@ -143,13 +155,14 @@
                         
                         //  Plot map
                         clearID('map')
-                        var div = document.createElement('map1');
+                        var div = document.createElement('div');
                         div.style.width = "100%";
+                        div.style.height = "450px";
                         div.style.display = "inline-block";
+                        div.id = 'map1'
                         elem = document.getElementById("map").appendChild(div)
                         
                         //  Calculate center point
-                        
                         pointsLon = []
                         pointsLat = []
                         center = [0,0]
@@ -163,33 +176,42 @@
                         
                         center[0] /= geometry.length-1
                         center[1] /= geometry.length-1
-                        var mapData = [{
-                            lon: pointsLon,
-                            lat: pointsLat,
-                            type: 'scattermapbox',
-                            fill: "toself",
-                            marker: {color: 'red'}
-                        }]
-                        var mapLayout = {
-                            mapbox: {
-                                style: 'open-street-map',
-                                center: { lon: center[0], lat: center[1] },
-                                zoom: 10,
-                                paper_bgcolor:'rgba(0,0,0,0)',
-                                plot_bgcolor:'rgba(0,0,0,0)',
-                            },
-                            modes: 'lines',
-                            paper_bgcolor:'rgba(0,0,0,0)',
-                            plot_bgcolor:'rgba(0,0,0,0)',
-                            margin: {l:0, r:0, b:20, t:20},
-                        }
-                        var mapConfig = {
-                            responsive: true,
-                            displayModeBar: false,
-                            staticPlot: false,
-                        }
-                        Plotly.newPlot(elem, mapData, mapLayout, mapConfig)
-                        
+//                         var mapData = [{
+//                             lon: pointsLon,
+//                             lat: pointsLat,
+//                             type: 'scattermapbox',
+//                             fill: "toself",
+//                             marker: {color: 'red'}
+//                         }]
+//                         var mapLayout = {
+//                             mapbox: {
+//                                 style: 'open-street-map',
+//                                 center: { lon: center[0], lat: center[1] },
+//                                 zoom: 6,
+//                                 paper_bgcolor:'rgba(0,0,0,0)',
+//                                 plot_bgcolor:'rgba(0,0,0,0)',
+//                             },
+//                             modes: 'lines',
+//                             paper_bgcolor:'rgba(0,0,0,0)',
+//                             plot_bgcolor:'rgba(0,0,0,0)',
+//                             margin: {l:0, r:0, b:20, t:20},
+//                         }
+//                         var mapConfig = {
+//                             responsive: true,
+//                             displayModeBar: false,
+//                             staticPlot: false,
+//                         }
+//                         Plotly.newPlot(elem, mapData, mapLayout, mapConfig)
+//                         
+                        var map = L.map("map1").setView([center[1],center[0]], 6);
+                        var osmAttribution ='Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
+                        var leafletRadarAttribution ='<a href="https://github.com/rwev/leaflet-radar">Radar</a>';
+                        L.tileLayer(
+                                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                {attribution: [osmAttribution,leafletRadarAttribution].join(" | ")}
+                        ).addTo(map);
+                        L.marker([center[1],center[0]]).addTo(map);
+                        L.control.radar({}).addTo(map);
                         
                         //  Create day by day summary
                         client.get(forcastDay, function(forecastResponse) {
