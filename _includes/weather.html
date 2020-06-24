@@ -37,7 +37,6 @@
     <div id="days" style='text-align:center; max-width:700px;margin:0 auto;'></div>
     <div id="graphs" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
     <script>
-    
         //  Create text search box
         var loc = document.getElementById("textinput")
         loc.setAttribute("value", "Atlanta, GA");
@@ -49,39 +48,6 @@
                 document.getElementById("button2").click();
             }
         })
-        
-        //  get request version 1
-        var HttpClient1 = function() {
-            this.get = function(aUrl, aCallback) {
-                var anHttpRequest = new XMLHttpRequest();
-                anHttpRequest.onreadystatechange = function() { 
-                    if (anHttpRequest.readyState == 4 && anHttpRequest.status == 200) {
-                        aCallback(anHttpRequest.responseText); 
-                    }
-                }
-                anHttpRequest.open( "GET", aUrl, true );            
-                anHttpRequest.send( null );
-            }
-        }
-        
-        //  Get request version 2
-        var HttpClient2 = function() {
-            this.get = function(aUrl, aCallback) {
-                var anHttpRequest = new XMLHttpRequest();
-                anHttpRequest.onreadystatechange = function() { 
-                    if (anHttpRequest.readyState == 4) {
-                        if (anHttpRequest.status == 200 || anHttpRequest.status == 304) {
-                            aCallback(anHttpRequest.responseText); 
-                        }
-                        else {
-                            aCallback(null); 
-                        }
-                    }
-                }
-                anHttpRequest.open( "GET", aUrl, true );            
-                anHttpRequest.send( null );
-            }
-        }
         
         //  Get current location and run weather
         function getCurrentLocation() {
@@ -124,36 +90,37 @@
         
             if (reverseGeo)
                 reverseGeocode(lat,lon)
-            
+                
             var locString = lat + ',' + lon
-            var client = new HttpClient2();
-            client.get('https://api.weather.gov/points/' + locString, function(pointsResponse) {
-                responseJson = JSON.parse(pointsResponse)
+            fetch('https://api.weather.gov/points/' + locString, {method:'GET'})
+            .then(function(response) { return response.json(); })
+            .then(function(pointsJson) {
                 degreeSymbol = String.fromCharCode(176)
+                
                 //  clear any existing errors
                 clearID('errors')
                 
                 //  Print error if weather not found
-                if (responseJson == null || responseJson.length == 0) {
+                if (pointsJson == null || pointsJson.length == 0) {
                     printError('Error: Weather at this location is not available from Weather.gov.')
                 }
                 else {
                     clearID('errors')
-                    responseJson = JSON.parse(pointsResponse)
                     console.log("point:")
-                    console.log(responseJson)
-                    forcastDay = responseJson.properties.forecast
-                    forcastGrid = responseJson.properties.forecastGridData
+                    console.log(pointsJson)
+                    forcastDay = pointsJson.properties.forecast
+                    forcastGrid = pointsJson.properties.forecastGridData
                     
                     //  Create detailed forecasts
-                    client.get(forcastGrid, function(gridResponse) {
-                        responseJson = JSON.parse(gridResponse)
-                        
+                    fetch(forcastGrid, {method:'GET'})
+                    .then(function(response) { return response.json(); })
+                    .then(function(gridJson) {                        
                         //  Print error if data not available
-                        if (responseJson == null || responseJson.length == 0) {
+                        if (gridJson == null || gridJson.length == 0) {
                             printError('Error: Weather at this location is not available from Weather.gov.')
                         }
-                        props = responseJson.properties
+                        
+                        props = gridJson.properties
                         console.log("griddata:")
                         console.log(props)
                         timeLength = props.temperature.values.length
@@ -167,7 +134,7 @@
                         div.id = 'map1'
                         elem = document.getElementById("map").appendChild(div)
 
-                        var map = L.map("map1",{doubleClickZoom:false}).setView([lat,lon], 6);
+                        var map = L.map("map1",{doubleClickZoom:false, scrollWheelZoom:false}).setView([lat,lon], 6);
                         var osmAttribution ='Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
                         var leafletRadarAttribution ='<a href="https://github.com/rwev/leaflet-radar">Radar</a>';
                         L.tileLayer(
@@ -178,18 +145,50 @@
                         L.control.radar({}).addTo(map);
                         map.on('dblclick', function(e) {
                             getWeather(e.latlng.lat, e.latlng.lng, true)
-                        });
+                        }).on('contextmenu', function(e) {
+                            getWeather(e.latlng.lat, e.latlng.lng, true)
+                        })
                         
                         
                         //  Create day by day summary
-                        client.get(forcastDay, function(forecastResponse) {
-                            dayProps = JSON.parse(forecastResponse).properties
+                        fetch(forcastDay, {method:'GET'})
+                        .then(function(response) { return response.json(); })
+                        .then(function(json) {
+                            dayProps = json.properties
                             console.log("daydata:")
                             console.log(dayProps)
                             
                             //  Print text summary of present forecast
                             clearID('now')
-                            nowDiv = document.getElementById('now')
+                            
+//                             currentTemp = getCurrentValue(props.temperature.values)
+//                             currentTempApparent = getCurrentValue(props.apparentTemperature.values)
+//                             currentHumidity = getCurrentValue(props.relativeHumidity.values)
+//                             currentPressure = getCurrentValue(props.pressure.values)
+//                             if (props.temperature.uom.includes('degC'))
+//                                 currentTemp = c2f(currentTemp)
+//                             if (props.apparentTemperature.uom.includes('degC'))
+//                                 currentTempApparent = c2f(currentTempApparent)
+//                             
+                            //  Find closest observation station
+//                             fetch(pointsJson.properties.observationStations, {method:'GET'})
+//                             .then(function(response) { return response.json(); })
+//                             .then(function(json) {
+//                                 var closestStation = json.features[0]
+//                                 console.log(closestStation)
+//                             });
+//                             
+//                             nowDiv = document.getElementById('now')
+//                             nowDiv.style['text-align'] = 'center'
+//                             var currentConditions = document.createElement("div");
+//                             currentConditions.style.width='100%'                            
+//                             var p1 = document.createElement("strong");
+//                             var temp = document.createTextNode(currentTemp.toString() + degreeSymbol);
+//                             p1.appendChild(temp)
+//                             nowDiv.appendChild(p1)
+                            
+                            nowDiv = document.createElement("div")
+                            nowDiv.style['text-align'] = 'left'
                             nowDiv.style.display = 'flex'
                             var middleColumn = document.createElement("div");
                             middleColumn.style.width='100%'                            
@@ -202,6 +201,7 @@
                             p1.appendChild(summary)
                             middleColumn.appendChild(p1)
                             nowDiv.appendChild(middleColumn)
+                            document.getElementById('now').appendChild(nowDiv)
                             
                             //  Match min temperature to max temperature
                             numBars = Math.min(props.maxTemperature.values.length, props.minTemperature.values.length)
@@ -325,7 +325,7 @@
                                 elem = elem.appendChild(div)
                                 Plotly.newPlot(elem, [trace1,trace2], layout, config);
                             }
-                        })
+                        });
                         
                         //  Generate data arrays
                         fields = ['temperature','probabilityOfPrecipitation', 'quantitativePrecipitation', 'dewpoint','relativeHumidity']
@@ -449,17 +449,16 @@
         
         // Get coordinate of location
         function geocode() {
-            var client = new HttpClient1();
             url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json&limit=1'
-            client.get(url, function(nomResponse) {
-                responseJson = JSON.parse(nomResponse)
-                clearID('errors')
-                if (responseJson.length == 0) {
+            fetch(url, {method:'GET'})
+            .then(function(response) { return response.json(); })
+            .then(function(nomJson) {
+                if (nomJson.length == 0) {
                     printError('Error: Location not identifiable from \"' + loc.value + '\".  Try again.')
                 }
                 else {
-                    var lat = responseJson[0].lat
-                    var lon = responseJson[0].lon
+                    var lat = nomJson[0].lat
+                    var lon = nomJson[0].lon
                     console.log('Geocode success: ' + loc.value + ' -> (' + lat + ', ' + lon + ')' )
                     getWeather(lat,lon)
                     
@@ -467,29 +466,42 @@
             })
         }
         
+        function getCurrentValue(array) {
+            var now = new Date()
+            var iTime = 0
+            for (i = 0; i < array.length; i++) {
+                iTime = new Date(array[i].validTime.split('/')[0])
+                if (iTime > now)
+                    return array[i-1].value
+            }
+        }
+        
         function reverseGeocode(lat,lon) {
-            var client = new HttpClient1();
             url = 'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&zoom=14'
-            client.get(url, function(nomResponse) {
-                responseJson = JSON.parse(nomResponse)
+            fetch(url, {method:'GET'})
+            .then(function(response) { return response.json(); })
+            .then(function(reverseJson) {
                 clearID('errors')
-                if (responseJson.length == 0) {
+                if (reverseJson.length == 0)
                     printError('Error: Reverse geocoding failed.  Input: lat=' + lat + ', lon=' + lon)
-                }
-                else {
-                    document.getElementById("textinput").setAttribute("value", responseJson.display_name);
-                }
+                else
+                    document.getElementById("textinput").setAttribute("value", reverseJson.display_name);
             })
         }
+        
         var showhelp = true
         function help() {
             clearID('errors')
             if (showhelp == true) {
-                printError('Enter a location by using your current location, the text search box, or double-click on map.')
+                printError('Enter a location by using your current location, the text search box, or the map by double-click, right click, or long press (mobile).')
                 showhelp = false
             }
             else
                 showhelp = true
+        }
+        
+        function eucDist(coord1,coord2) {
+            return Math.sqrt(Math.pow(coord1[0] - coord2[0], 2) + Math.pow(coord1[1] - coord2[1], 2))
         }
         
         geocode()
