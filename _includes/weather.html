@@ -31,14 +31,20 @@
         <button id='button3' onclick="help()" class="fa fa-question fa-border" style="cursor:pointer;height:100%;"></button>
     </div>
     <div id="errors" style='text-align:center; max-width:1000px;margin:0 auto; margin-bottom:20px'></div>
-    <div id="now" style='text-align:left; max-width:1000px;margin:0 auto;'></div>
-    <div id="24h" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
-    <div id="map" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
+    <div id="now" style='text-align:left; max-width:1000px;margin:0 auto;'>
+        <div id="conditions"></div>
+        <div id="summary"></div>
+    </div>
+    <div id="map" style='text-align:center; max-width:1000px;margin:0 auto;'>
+        <div id="map1" style='width:100%; height:350px; display:inline-block'></div>
+    </div>
+    
     <div id="days" style='text-align:center; max-width:700px;margin:0 auto;'></div>
     <div id="graphs" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
     <script>
         //  Create text search box
         var loc = document.getElementById("textinput")
+        mapDrawn = false
         loc.setAttribute("value", "Atlanta, GA");
         
         //  Allow pressing enter to submit
@@ -73,6 +79,11 @@
             return celcius * 9.0 / 5.0 + 32.0
         }
         
+        //  Convert meters to feet
+        function m2ft(meters) {
+            return (meters * 100) / (12 * 2.54)
+        }
+        
         const dayFind = /(\d+)D/
         const hourFind = /(\d+)H/
         function parseDuration(string) {
@@ -86,258 +97,256 @@
         
         
         //  Get weather data
+        var degreeSymbol = String.fromCharCode(176)
         function getWeather(lat, lon, reverseGeo=false) {
         
             if (reverseGeo)
                 reverseGeocode(lat,lon)
-                
-            var locString = lat + ',' + lon
-            fetch('https://api.weather.gov/points/' + locString, {method:'GET'})
+            clearID('days')
+            clearID('graphs')
+            clearID('errors')
+            clearID('summary')
+            clearID('conditions')
+            
+            //  Create map
+            if (!mapDrawn) {
+                mapDrawn = true
+                map = L.map("map1",{doubleClickZoom:false, scrollWheelZoom:false}).setView([lat,lon], 6);
+                osmAttribution ='Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
+                leafletRadarAttribution ='<a href="https://github.com/rwev/leaflet-radar">Radar</a>';
+                L.tileLayer(
+                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                        {attribution: [osmAttribution, leafletRadarAttribution].join(" | ")}
+                ).addTo(map);
+                marker = L.marker([lat,lon]).addTo(map);
+                L.control.radar({}).addTo(map);
+                map.on('dblclick', function(e) {
+                getWeather(e.latlng.lat, e.latlng.lng, true)
+                }).on('contextmenu', function(e) {
+                    getWeather(e.latlng.lat, e.latlng.lng, true)
+                })
+            }
+            else {
+                map.panTo([lat,lon]);
+                map.removeLayer(marker)
+                marker = L.marker([lat,lon]).addTo(map);
+            }
+            
+            fetch('https://api.weather.gov/points/' + lat + ',' + lon, {method:'GET'})
             .then(function(response) { return response.json(); })
             .then(function(pointsJson) {
-                degreeSymbol = String.fromCharCode(176)
-                
-                //  clear any existing errors
-                clearID('errors')
-                
-                //  Print error if weather not found
                 if (pointsJson == null || pointsJson.length == 0) {
                     printError('Error: Weather at this location is not available from Weather.gov.')
                 }
                 else {
-                    clearID('errors')
                     console.log("point:")
                     console.log(pointsJson)
-                    forcastDay = pointsJson.properties.forecast
-                    forcastGrid = pointsJson.properties.forecastGridData
+                    
+                    clearID('conditions')
+                    fetch(pointsJson.properties.observationStations, {method:'GET'})
+                    .then(function(response) { return response.json(); })
+                    .then(function(json) {
+                        var station = json.features[0]
+                        console.log(station)
+                        var elevation = station.properties.elevation.value
+                        if (station.properties.elevation.unitCode.includes('unit:m'))
+                            elevation = m2ft(elevation)
+                        var stationID = station.properties.stationIdentifier
+                        fetch('https://api.weather.gov/stations/' + stationID + '/observations/latest?require_qc=false', {method:'GET'})
+                        .then(function(response) {return response.json()})
+                        .then(function(json) {
+                            console.log('observation:')
+                            console.log(json)
+                            currentTemp = json.properties.temperature.value
+                            if (json.properties.temperature.unitCode.includes('degC')) {
+                                currentTemp = Math.round(c2f(currentTemp))
+                            }
+                            else {
+                                currentTemp = Math.round(currentTemp)
+                            }
+                            nowDiv = document.getElementById('conditions')
+                            nowDiv.style['text-align'] = 'center'
+                            var currentConditions = document.createElement("h3");
+                            currentConditions.style['margin-top'] = '0px'                            
+//                             var p1 = document.createElement("strong");
+                            var temp = document.createTextNode(currentTemp.toString() + degreeSymbol + ' ' + json.properties.textDescription);
+                            currentConditions.appendChild(temp)
+                            nowDiv.appendChild(currentConditions)
+                        })
+                    })
+                    
+                    //  Create day by day summary
+                    fetch(pointsJson.properties.forecast, {method:'GET'})
+                    .then(function(response) { return response.json(); })
+                    .then(function(json) {
+                        dayProps = json.properties
+                        console.log("daydata:")
+                        console.log(dayProps)
+                        
+                        //  Print text summary of present forecast
+                        nowDiv = document.createElement("div")
+                        nowDiv.style['text-align'] = 'left'
+                        nowDiv.style.display = 'flex'
+                        var middleColumn = document.createElement("div");
+                        middleColumn.style.width='100%'                            
+                        var p1 = document.createElement("p");
+                        var bold = document.createElement("b");
+                        var prefix = document.createTextNode(dayProps.periods[0].name + ': ')
+                        var summary = document.createTextNode(dayProps.periods[0].detailedForecast);
+                        bold.appendChild(prefix)
+                        p1.appendChild(bold)
+                        p1.appendChild(summary)
+                        middleColumn.appendChild(p1)
+                        nowDiv.appendChild(middleColumn)
+                        document.getElementById('summary').appendChild(nowDiv)
+                    })
                     
                     //  Create detailed forecasts
-                    fetch(forcastGrid, {method:'GET'})
+                    fetch(pointsJson.properties.forecastGridData, {method:'GET'})
                     .then(function(response) { return response.json(); })
                     .then(function(gridJson) {                        
                         //  Print error if data not available
-                        if (gridJson == null || gridJson.length == 0) {
+                        if (gridJson == null || gridJson.length == 0 || gridJson.properties == undefined) {
                             printError('Error: Weather at this location is not available from Weather.gov.')
                         }
                         
-                        props = gridJson.properties
+                        gridProps = gridJson.properties
                         console.log("griddata:")
-                        console.log(props)
-                        timeLength = props.temperature.values.length
+                        console.log(gridProps)
+                        timeLength = gridProps.temperature.values.length
                         
-                        //  Plot map
-                        clearID('map')
-                        var div = document.createElement('div');
-                        div.style.width = "100%";
-                        div.style.height = "450px";
-                        div.style.display = "inline-block";
-                        div.id = 'map1'
-                        elem = document.getElementById("map").appendChild(div)
-
-                        var map = L.map("map1",{doubleClickZoom:false, scrollWheelZoom:false}).setView([lat,lon], 6);
-                        var osmAttribution ='Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
-                        var leafletRadarAttribution ='<a href="https://github.com/rwev/leaflet-radar">Radar</a>';
-                        L.tileLayer(
-                                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                                {attribution: [osmAttribution,leafletRadarAttribution].join(" | ")}
-                        ).addTo(map);
-                        L.marker([lat,lon]).addTo(map);
-                        L.control.radar({}).addTo(map);
-                        map.on('dblclick', function(e) {
-                            getWeather(e.latlng.lat, e.latlng.lng, true)
-                        }).on('contextmenu', function(e) {
-                            getWeather(e.latlng.lat, e.latlng.lng, true)
-                        })
+                        //  Match min temperature to max temperature
+                        numBars = Math.min(gridProps.maxTemperature.values.length, gridProps.minTemperature.values.length)
+                        if (gridProps.minTemperature.values.length !== gridProps.maxTemperature.values.length) {
+                            firstDateMin = new Date(gridProps.minTemperature.values[0].validTime.split('/')[0])
+                            firstDateMax = new Date(gridProps.maxTemperature.values[0].validTime.split('/')[0])
+                            if (firstDateMin.getDate() == firstDateMax.getDate()) {
+                                gridProps.minTemperature.values = gridProps.minTemperature.values.slice(0,numBars)
+                                gridProps.maxTemperature.values = gridProps.maxTemperature.values.slice(0,numBars)
+                            }
+                            else {
+                                gridProps.minTemperature.values = gridProps.minTemperature.values.slice(gridProps.minTemperature.values.length - numbars)
+                                gridProps.maxTemperature.values = gridProps.minTemperature.values.slice(gridProps.maxTemperature.values.length - numbars)
+                            }
+                        }
                         
-                        
-                        //  Create day by day summary
-                        fetch(forcastDay, {method:'GET'})
-                        .then(function(response) { return response.json(); })
-                        .then(function(json) {
-                            dayProps = json.properties
-                            console.log("daydata:")
-                            console.log(dayProps)
-                            
-                            //  Print text summary of present forecast
-                            clearID('now')
-                            
-//                             currentTemp = getCurrentValue(props.temperature.values)
-//                             currentTempApparent = getCurrentValue(props.apparentTemperature.values)
-//                             currentHumidity = getCurrentValue(props.relativeHumidity.values)
-//                             currentPressure = getCurrentValue(props.pressure.values)
-//                             if (props.temperature.uom.includes('degC'))
-//                                 currentTemp = c2f(currentTemp)
-//                             if (props.apparentTemperature.uom.includes('degC'))
-//                                 currentTempApparent = c2f(currentTempApparent)
-//                             
-                            //  Find closest observation station
-//                             fetch(pointsJson.properties.observationStations, {method:'GET'})
-//                             .then(function(response) { return response.json(); })
-//                             .then(function(json) {
-//                                 var closestStation = json.features[0]
-//                                 console.log(closestStation)
-//                             });
-//                             
-//                             nowDiv = document.getElementById('now')
-//                             nowDiv.style['text-align'] = 'center'
-//                             var currentConditions = document.createElement("div");
-//                             currentConditions.style.width='100%'                            
-//                             var p1 = document.createElement("strong");
-//                             var temp = document.createTextNode(currentTemp.toString() + degreeSymbol);
-//                             p1.appendChild(temp)
-//                             nowDiv.appendChild(p1)
-                            
-                            nowDiv = document.createElement("div")
-                            nowDiv.style['text-align'] = 'left'
-                            nowDiv.style.display = 'flex'
-                            var middleColumn = document.createElement("div");
-                            middleColumn.style.width='100%'                            
-                            var p1 = document.createElement("p");
-                            var bold = document.createElement("b");
-                            var prefix = document.createTextNode(dayProps.periods[0].name + ': ')
-                            var summary = document.createTextNode(dayProps.periods[0].detailedForecast);
-                            bold.appendChild(prefix)
-                            p1.appendChild(bold)
-                            p1.appendChild(summary)
-                            middleColumn.appendChild(p1)
-                            nowDiv.appendChild(middleColumn)
-                            document.getElementById('now').appendChild(nowDiv)
-                            
-                            //  Match min temperature to max temperature
-                            numBars = Math.min(props.maxTemperature.values.length, props.minTemperature.values.length)
-                            if (props.minTemperature.values.length !== props.maxTemperature.values.length) {
-                                firstDateMin = new Date(props.minTemperature.values[0].validTime.split('/')[0])
-                                firstDateMax = new Date(props.maxTemperature.values[0].validTime.split('/')[0])
-                                if (firstDateMin.getDate() == firstDateMax.getDate()) {
-                                    props.minTemperature.values = props.minTemperature.values.slice(0,numBars)
-                                    props.maxTemperature.values = props.maxTemperature.values.slice(0,numBars)
-                                }
-                                else {
-                                    props.minTemperature.values = props.minTemperature.values.slice(props.minTemperature.values.length - numbars)
-                                    props.maxTemperature.values = props.minTemperature.values.slice(props.maxTemperature.values.length - numbars)
-                                }
-                            }
-                            
-                            //  Convert celcius to farenheit
-                            if (props.minTemperature.uom.includes('degC')) {
-                                for (var i = 0; i < numBars; i++) {
-                                    props.minTemperature.values[i].value = c2f(props.minTemperature.values[i].value)
-                                    props.maxTemperature.values[i].value = c2f(props.maxTemperature.values[i].value)
-                                }
-                            }
-                           
-                            //   Find common min and max for all bar charts
-                            var minT = props.minTemperature.values[0].value
-                            var maxT = props.maxTemperature.values[0].value
-                            for (var i = 1; i < numBars; i++) {
-                                if (props.minTemperature.values[i].value < minT)
-                                    minT = props.minTemperature.values[i].value
-                                if (props.maxTemperature.values[i].value > maxT)
-                                    maxT = props.maxTemperature.values[i].value
-                            }
-                            
-                            //  Clear div before populating
-                            clearID('days')
+                        //  Convert celcius to farenheit
+                        if (gridProps.minTemperature.uom.includes('degC')) {
                             for (var i = 0; i < numBars; i++) {
-                            
-                                validDay = props.minTemperature.values[i].validTime.split('T')[0]
-                                
-                                trace1 = {
-                                    x: [props.minTemperature.values[i].value],
-                                    y: [validDay],
-                                    type: 'bar',
-                                    orientation: 'h',
-                                    marker: {
-                                        color: 'rgba(1,1,1,0.0)'
-                                    },
-                                    text: Math.round(props.minTemperature.values[i].value).toString() + degreeSymbol,
-                                    textposition: 'outside',
-                                }
-                                
-                                trace2 = {
-                                    x:  [props.maxTemperature.values[i].value-props.minTemperature.values[i].value],
-                                    y: [validDay],
-                                    type: 'bar',
-                                    marker: {
-                                        color: '#737373'
-                                    },
-                                    orientation: 'h',
-                                    text: Math.round(props.maxTemperature.values[i].value).toString() + degreeSymbol,
-                                    textposition: 'outside',
-                                }
-                                
-                                var layout = {
-                                    paper_bgcolor:'rgba(0,0,0,0)',
-                                    plot_bgcolor:'rgba(0,0,0,0)',
-                                    showlegend: false,
-                                    margin: {b:3, t:3,l:40,r:0},
-                                    height: 35,
-                                    xaxis: {
-                                        showgrid: false,
-                                        showline: false,
-                                        zeroline: false,
-                                        fixedrange: true,
-                                        showticklabels: false,
-                                        range: [minT-3, maxT+3],
-                                    },
-                                    yaxis: {
-                                        showline: false,
-                                        showgrid: false,
-                                        zeroline: false,
-                                        autotick:false,
-                                        tickformat: '<b>%a</b>',
-                                        fixedrange: true,
-                                    },
-                                    barmode: 'stack',
-                                }
-                                
-                                var config = {
-                                    responsive: true,
-                                    displayModeBar: false,
-                                    staticPlot: true,
-                                }
-                                
-                                if (i == 0) {
-                                    if ((new Date(validDay)).getUTCDate() == new Date().getDate()) {
-                                        trace1.y = ['<b>Today</b>']
-                                        trace2.y = ['<b>Today</b>']
-                                    }
-                                }
-                                
-                                var div = document.createElement('button');
-                                div.style.outline = 'none'
-                                div.style['background-color'] = 'Transparent'
-                                div.style.cursor = 'Pointer'
-                                div.style.border='none'
-                                div.style.width = "100%";
-                                div.style.display = "inline-block";
-                                elem = document.getElementById("days").appendChild(div)
-                                elem.classList.add('collapsible')
-                                
-                                var content = document.createElement('div')
-                                
-                                
-                                var div = document.createElement('div');
-                                div.style.width = "100%";
-                                div.style.display = "inline-block";
-                                div.class = 'collapsible'
-                                div.type = 'button'
-                                elem = elem.appendChild(div)
-                                Plotly.newPlot(elem, [trace1,trace2], layout, config);
+                                gridProps.minTemperature.values[i].value = c2f(gridProps.minTemperature.values[i].value)
+                                gridProps.maxTemperature.values[i].value = c2f(gridProps.maxTemperature.values[i].value)
                             }
-                        });
+                        }
+                        
+                        //   Find common min and max for all bar charts
+                        var minT = gridProps.minTemperature.values[0].value
+                        var maxT = gridProps.maxTemperature.values[0].value
+                        for (var i = 1; i < numBars; i++) {
+                            if (gridProps.minTemperature.values[i].value < minT)
+                                minT = gridProps.minTemperature.values[i].value
+                            if (gridProps.maxTemperature.values[i].value > maxT)
+                                maxT = gridProps.maxTemperature.values[i].value
+                        }
+                        
+                        //  Clear div before populating
+                        for (var i = 0; i < numBars; i++) {
+                        
+                            validDay = gridProps.minTemperature.values[i].validTime.split('T')[0]
+                            
+                            trace1 = {
+                                x: [gridProps.minTemperature.values[i].value],
+                                y: [validDay],
+                                type: 'bar',
+                                orientation: 'h',
+                                marker: {
+                                    color: 'rgba(1,1,1,0.0)'
+                                },
+                                text: Math.round(gridProps.minTemperature.values[i].value).toString() + degreeSymbol,
+                                textposition: 'outside',
+                            }
+                            
+                            trace2 = {
+                                x:  [gridProps.maxTemperature.values[i].value-gridProps.minTemperature.values[i].value],
+                                y: [validDay],
+                                type: 'bar',
+                                marker: {
+                                    color: '#737373'
+                                },
+                                orientation: 'h',
+                                text: Math.round(gridProps.maxTemperature.values[i].value).toString() + degreeSymbol,
+                                textposition: 'outside',
+                            }
+                            
+                            var layout = {
+                                paper_bgcolor:'rgba(0,0,0,0)',
+                                plot_bgcolor:'rgba(0,0,0,0)',
+                                showlegend: false,
+                                margin: {b:3, t:3,l:40,r:0},
+                                height: 35,
+                                xaxis: {
+                                    showgrid: false,
+                                    showline: false,
+                                    zeroline: false,
+                                    fixedrange: true,
+                                    showticklabels: false,
+                                    range: [minT-3, maxT+3],
+                                },
+                                yaxis: {
+                                    showline: false,
+                                    showgrid: false,
+                                    zeroline: false,
+                                    autotick:false,
+                                    tickformat: '<b>%a</b>',
+                                    fixedrange: true,
+                                },
+                                barmode: 'stack',
+                            }
+                            
+                            var config = {
+                                responsive: true,
+                                displayModeBar: false,
+                                staticPlot: true,
+                            }
+                            
+                            if (i == 0) {
+                                if ((new Date(validDay)).getUTCDate() == new Date().getDate()) {
+                                    trace1.y = ['<b>Today</b>']
+                                    trace2.y = ['<b>Today</b>']
+                                }
+                            }
+                            
+                            var div = document.createElement('button');
+                            div.style.outline = 'none'
+                            div.style['background-color'] = 'Transparent'
+                            div.style.cursor = 'Pointer'
+                            div.style.border='none'
+                            div.style.width = "100%";
+                            div.style.display = "inline-block";
+                            elem = document.getElementById("days").appendChild(div)
+                            elem.classList.add('collapsible')
+                            
+                            var content = document.createElement('div')
+                            
+                            var div = document.createElement('div');
+                            div.style.width = "100%";
+                            div.style.display = "inline-block";
+                            div.class = 'collapsible'
+                            div.type = 'button'
+                            elem = elem.appendChild(div)
+                            Plotly.newPlot(elem, [trace1,trace2], layout, config);
+                        }
                         
                         //  Generate data arrays
                         fields = ['temperature','probabilityOfPrecipitation', 'quantitativePrecipitation', 'dewpoint','relativeHumidity']
                         dataStruct = {}
                         fields.forEach(function (field, index) {
-                            if (field in props) {
-                                numPoints = props[field].values.length
+                            if (field in gridProps) {
+                                numPoints = gridProps[field].values.length
                                 entryStruct = {'time':new Array(), 'data':new Array(), 'unit':''}
                                 
                                 //  Extract parameter unit
-                                if ('uom' in props[field])
-                                    entryStruct.unit = props[field].uom.split(':')[1]
+                                if ('uom' in gridProps[field])
+                                    entryStruct.unit = gridProps[field].uom.split(':')[1]
                                     
                                 //  Get date of today, and date in 24 hours
                                 today = new Date()
@@ -347,7 +356,7 @@
                                 
                                 //  Create array of data
                                 for (var i = 0; i < numPoints; i++) {
-                                    iso8601String = props[field].values[i].validTime
+                                    iso8601String = gridProps[field].values[i].validTime
                                     
                                     isoSplit = iso8601String.split('/')
                                     startTime = new Date(isoSplit[0])
@@ -361,7 +370,7 @@
                                             currentTime.setHours(currentTime.getHours() + h)
                                             if (currentTime <= todayPlus24h) {
                                                 entryStruct.time.push(currentTime)
-                                                entryStruct.data.push(props[field].values[i].value)
+                                                entryStruct.data.push(gridProps[field].values[i].value)
                                             }
                                         }
                                     }
@@ -385,7 +394,6 @@
                             else {
                                 console.log('Error: ' + field + ' not in properties')
                             }
-                            
                         })
                         
                         //  Generate plots
@@ -437,7 +445,6 @@
                         }
                     })
                 }
-                
             })
         }
         
