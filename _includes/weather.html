@@ -74,6 +74,21 @@
             }
         }
         
+        function fetch_retry(url, options = {}, retries = 3) {
+            const retryCodes = [408, 500, 502, 503, 504, 522, 524]
+            return fetch(url, options)
+            .then(res => {
+            if (res.ok) 
+                return res
+            if (retries > 0 && retryCodes.includes(res.status)) {
+                return fetch_retry(url, options, retries - 1)
+            } else {
+                throw new Error(res)
+            }
+            })
+            .catch(console.error)
+        }
+        
         //  Convert Celcius to Fahrenheit
         function c2f(celcius) {
             return celcius * 9.0 / 5.0 + 32.0
@@ -94,7 +109,6 @@
                 hourOffset += parseInt(string.match(hourFind)[1])
             return hourOffset
         }
-        
         
         //  Get weather data
         var degreeSymbol = String.fromCharCode(176)
@@ -132,7 +146,7 @@
                 marker = L.marker([lat,lon]).addTo(map);
             }
             
-            fetch('https://api.weather.gov/points/' + lat + ',' + lon, {method:'GET'})
+            fetch_retry('https://api.weather.gov/points/' + lat + ',' + lon, {method:'GET'}, 5)
             .then(function(response) { return response.json(); })
             .then(function(pointsJson) {
                 if (pointsJson == null || pointsJson.length == 0) {
@@ -143,7 +157,7 @@
                     console.log(pointsJson)
                     
                     clearID('conditions')
-                    fetch(pointsJson.properties.observationStations, {method:'GET'})
+                    fetch_retry(pointsJson.properties.observationStations, {method:'GET'}, 5)
                     .then(function(response) { return response.json(); })
                     .then(function(json) {
                         var station = json.features[0]
@@ -152,7 +166,7 @@
                         if (station.properties.elevation.unitCode.includes('unit:m'))
                             elevation = m2ft(elevation)
                         var stationID = station.properties.stationIdentifier
-                        fetch('https://api.weather.gov/stations/' + stationID + '/observations/latest?require_qc=false', {method:'GET'})
+                        fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations/latest?require_qc=true', {method:'GET'}, 5)
                         .then(function(response) {return response.json()})
                         .then(function(json) {
                             console.log('observation:')
@@ -176,7 +190,7 @@
                     })
                     
                     //  Create day by day summary
-                    fetch(pointsJson.properties.forecast, {method:'GET'})
+                    fetch_retry(pointsJson.properties.forecast, {method:'GET'}, 5)
                     .then(function(response) { return response.json(); })
                     .then(function(json) {
                         dayProps = json.properties
@@ -202,7 +216,7 @@
                     })
                     
                     //  Create detailed forecasts
-                    fetch(pointsJson.properties.forecastGridData, {method:'GET'})
+                    fetch_retry(pointsJson.properties.forecastGridData, {method:'GET'}, 5)
                     .then(function(response) { return response.json(); })
                     .then(function(gridJson) {                        
                         //  Print error if data not available
@@ -457,7 +471,7 @@
         // Get coordinate of location
         function geocode() {
             url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json&limit=1'
-            fetch(url, {method:'GET'})
+            fetch_retry(url, {method:'GET'}, 5)
             .then(function(response) { return response.json(); })
             .then(function(nomJson) {
                 if (nomJson.length == 0) {
@@ -485,7 +499,7 @@
         
         function reverseGeocode(lat,lon) {
             url = 'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&zoom=14'
-            fetch(url, {method:'GET'})
+            fetch_retry(url, {method:'GET'}, 5)
             .then(function(response) { return response.json(); })
             .then(function(reverseJson) {
                 clearID('errors')
