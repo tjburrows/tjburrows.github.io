@@ -506,7 +506,7 @@
                 if (reverseJson.length == 0)
                     printError('Error: Reverse geocoding failed.  Input: lat=' + lat + ', lon=' + lon)
                 else
-                    document.getElementById("textinput").setAttribute("value", reverseJson.display_name);
+                    document.getElementById("textinput").setAttribute("value", reverseJson.display_name.slice(0, -(reverseJson.address.country.length + 2)));
             })
         }
         
