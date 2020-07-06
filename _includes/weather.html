@@ -184,7 +184,6 @@
             if (reverseGeo) {
                 reverseGeocode(lat,lon)
             }
-                
             
             clearID('days')
             clearID('graphs')
@@ -200,7 +199,7 @@
                 leafletRadarAttribution ='<a href="https://github.com/rwev/leaflet-radar">Radar</a>';
                 L.tileLayer(
                         "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                        {attribution: [osmAttribution, leafletRadarAttribution].join(" | ")}
+                        {attribution: [osmAttribution, leafletRadarAttribution].join(" | "), dragging:!L.Browser.mobile}
                 ).addTo(map);
                 marker = L.marker([lat,lon]).addTo(map);
                 L.control.radar({}).addTo(map);
