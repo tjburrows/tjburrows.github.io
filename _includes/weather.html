@@ -195,7 +195,7 @@
             //  Create map
             if (!mapDrawn) {
                 mapDrawn = true
-                map = L.map("map1",{doubleClickZoom:false, scrollWheelZoom:false}).setView([lat,lon], 6);
+                map = L.map("map1",{doubleClickZoom:false, scrollWheelZoom:false, dragging:!L.Browser.mobile}).setView([lat,lon], 6);
                 osmAttribution ='Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
                 leafletRadarAttribution ='<a href="https://github.com/rwev/leaflet-radar">Radar</a>';
                 L.tileLayer(
