@@ -208,6 +208,7 @@
                 }).on('contextmenu', function(e) {
                     getWeather(e.latlng.lat, e.latlng.lng, true)
                 })
+                map.options.dragging = !L.Browser.mobile
             }
             else {
                 map.panTo([lat,lon]);
