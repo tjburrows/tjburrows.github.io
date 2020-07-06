@@ -440,6 +440,10 @@
                                     localMidnight.setMinutes(localMidnight.getMinutes() + localMidnight.getTimezoneOffset())
                                     var tempData = generateDataOnDate(gridProps, fields, localMidnight)
                                    
+                                   
+                                    var xmin = localMidnight
+                                    var xmax = new Date(xmin)
+                                    xmax.setHours(xmax.getHours() + 23)
                                     var div = document.createElement('div')
                                     div.style.width = "90%"
                                     div.style.display = "inline-block"
@@ -454,6 +458,8 @@
                                             type:'date',
                                             tickformat: '%-I %p',
                                             fixedrange: true,
+                                            range: [xmin, xmax],
+                                            
                                         },
                                         yaxis: {
                                             fixedrange: true,
@@ -461,9 +467,9 @@
                                             gridcolor:'rgba(0,0,0,0.25)',
                                         },
                                         legend: {
-                                            x: 1,
+                                            x: 0,
                                             y: 1,
-                                            xanchor: 'right',
+                                            xanchor: 'left',
                                             yanchor: 'top',
                                             traceorder: 'reversed',
                                         },
@@ -513,6 +519,7 @@
                                             type:'date',
                                             tickformat: '%-I %p',
                                             fixedrange: true,
+                                            range: [xmin, xmax],
                                         },
                                         yaxis: {
                                             fixedrange: true,
