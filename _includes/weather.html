@@ -118,7 +118,7 @@
             return hourOffset
         }
         
-        function generateDataOnDate(gridProps, fields, date) {
+        function generateDataOnDate(gridProps, fields, date, offset=24) {
             dataStruct = {}
             fields.forEach(function (field, index) {
                 if (field in gridProps) {
@@ -131,7 +131,7 @@
                         
                     //  Get date of today, and date in 24 hours
                     datePlus24h = new Date(date)
-                    datePlus24h.setDate(datePlus24h.getDate() + 1)
+                    datePlus24h.setHours(datePlus24h.getHours() + offset)
                     
                     //  Create array of data
                     for (var i = 0; i < numPoints; i++) {
@@ -142,12 +142,12 @@
                         duration = parseDuration(isoSplit[1])
                         
                         //  Only plot next 24 hours
-                        if (startTime >= date && startTime < datePlus24h) {
+                        if (startTime < datePlus24h) {
                             //  Repeat value for specified number of hours
                             for (var h = 0; h < duration; h++) {
                                 currentTime = new Date(startTime)
                                 currentTime.setHours(currentTime.getHours() + h)
-                                if (currentTime <= datePlus24h) {
+                                if (currentTime >= date && currentTime <= datePlus24h) {
                                     entryStruct.time.push(currentTime)
                                     entryStruct.data.push(gridProps[field].values[i].value)
                                 }
@@ -344,8 +344,8 @@
                     }
                     
                     //  Generate data arrays
-                    fields = ['temperature','probabilityOfPrecipitation', 'quantitativePrecipitation', 'dewpoint','relativeHumidity']
-                    dataStruct = generateDataOnDate(gridProps, fields, new Date())
+//                     fields = ['temperature','probabilityOfPrecipitation', 'quantitativePrecipitation', 'dewpoint','relativeHumidity']
+//                     dataStruct = generateDataOnDate(gridProps, fields, new Date())
                     validDay = []
                     for (var i = 0; i < numBars; i++) {
                         
@@ -435,13 +435,13 @@
                                 if (!content.classList.contains('generated')) {
                                     content.classList.add("generated")
                                     
-                                    fields = ['temperature', 'apparentTemperature']
+                                    fields = ['temperature', 'apparentTemperature', 'probabilityOfPrecipitation']
                                     var localMidnight = new Date(validDay[i])
                                     localMidnight.setMinutes(localMidnight.getMinutes() + localMidnight.getTimezoneOffset())
                                     var tempData = generateDataOnDate(gridProps, fields, localMidnight)
                                    
                                     var div = document.createElement('div')
-                                    div.style.width = "100%"
+                                    div.style.width = "90%"
                                     div.style.display = "inline-block"
                                     elem = content.appendChild(div)
 
@@ -457,8 +457,14 @@
                                         },
                                         yaxis: {
                                             fixedrange: true,
+                                            showgrid:true,
+                                            gridcolor:'rgba(0,0,0,0.25)',
                                         },
                                         legend: {
+                                            x: 1,
+                                            y: 1,
+                                            xanchor: 'right',
+                                            yanchor: 'top',
                                             traceorder: 'reversed',
                                         },
                                         margin: {b:30, t:40,l:30,r:0},
@@ -492,6 +498,44 @@
                                         name: 'Feels Like',
                                     }
                                     Plotly.newPlot(elem, traces, layout, config)
+                                    
+                                    var div = document.createElement('div')
+                                    div.style.width = "90%"
+                                    div.style.display = "inline-block"
+                                    elem = content.appendChild(div)
+                                    
+                                    var layout = {
+                                        height: 200,
+                                        paper_bgcolor:'rgba(0,0,0,0)',
+                                        plot_bgcolor:'rgba(0,0,0,0)',
+                                        title: 'Precipitation Chance (%)',
+                                        xaxis: {
+                                            type:'date',
+                                            tickformat: '%-I %p',
+                                            fixedrange: true,
+                                        },
+                                        yaxis: {
+                                            fixedrange: true,
+                                            range: [0,100],
+                                            showgrid:true,
+                                            gridcolor:'rgba(0,0,0,0.25)',
+                                        },
+                                        showlegend: false,
+                                        margin: {b:30, t:40,l:30,r:0},
+                                    }
+                                    
+                                    traces = []
+                                    traces[0] = {
+                                        x: tempData['probabilityOfPrecipitation'].time,
+                                        y: tempData['probabilityOfPrecipitation'].data,
+                                        mode:'lines',
+                                        type:'scatter',
+                                        line: {
+                                            color: '#444',
+                                            width: 3,
+                                        },
+                                    }
+                                    Plotly.newPlot(elem, traces, layout, config)
                                 }
                                 
                             }
@@ -510,7 +554,7 @@
                         content.classList.add('content')
                         content.style.display = 'none'
                         content.style.width = '100%'
-                        content.style.height = 200
+                        content.style.height = 400
                         content.style['margin-bottom'] = 0
                         content.style.overflow = 'hidden'
                         document.getElementById("days").appendChild(content)
