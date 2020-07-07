@@ -3,8 +3,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     <style>
-        button div:hover {
+        .collapsible {
+            background-color: transparent;
+        }
+        
+        .active, .collapsible:hover {
             background-color: #d3d3d3;
+        }
+        
+        .content {
+            display: none
+            overflow: hidden;
+            background-color: rgba(0,0,0,0.02);
+            margin-bottom: 0px;
         }
     </style>
     
@@ -421,7 +432,6 @@
                         
                         var div = document.createElement('button');
                         div.style.outline = 'none'
-                        div.style['background-color'] = 'Transparent'
                         div.style.cursor = 'Pointer'
                         div.style.border='none'
                         div.style.width = "100%";
@@ -567,12 +577,8 @@
                         // create content of collapsible
                         var content = document.createElement('h1')
                         content.classList.add('content')
-                        content.style.display = 'none'
                         content.style.width = '100%'
                         content.style.height = 400
-                        content.style['margin-bottom'] = 0
-                        content.style.overflow = 'hidden'
-                        content.style['background-color'] = 'rgba(0,0,0,0.02)'
                         document.getElementById("days").appendChild(content)
                         
                         
