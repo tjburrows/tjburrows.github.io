@@ -118,6 +118,7 @@
             return hourOffset
         }
         
+        
         function generateDataOnDate(gridProps, fields, date, offset=24) {
             dataStruct = {}
             fields.forEach(function (field, index) {
@@ -288,7 +289,12 @@
                 
                 //  Create detailed forecasts
                 fetch_retry(pointsJson.properties.forecastGridData, {method:'GET'}, 5)
-                .then(function(response) { 
+                .then(function(response) {
+//                     var lastModifiedHeader = response.headers.get('Last-Modified')
+//                     console.log(lastModifiedHeader)
+//                     var gridLastModified = ((new Date() - new Date(lastModifiedHeader)) / (1000. * 60 * 60)).toFixed(1)
+//                     var div = document.createTextNode('Weather.gov Forecast from ' + gridLastModified.toString() + ' Hours ago')
+//                     document.getElementById("days").appendChild(div)
                     return response.json()})
                 .then(function(gridJson) { 
                     if (gridJson == null || gridJson.length == 0 || gridJson.properties == undefined) {
@@ -458,6 +464,7 @@
                                             type:'date',
                                             tickformat: '%-I %p',
                                             fixedrange: true,
+                                            showgrid:false,
                                             range: [xmin, xmax],
                                             
                                         },
@@ -520,6 +527,7 @@
                                             tickformat: '%-I %p',
                                             fixedrange: true,
                                             range: [xmin, xmax],
+                                            showgrid:false,
                                         },
                                         yaxis: {
                                             fixedrange: true,
@@ -564,6 +572,7 @@
                         content.style.height = 400
                         content.style['margin-bottom'] = 0
                         content.style.overflow = 'hidden'
+                        content.style['background-color'] = 'rgba(0,0,0,0.02)'
                         document.getElementById("days").appendChild(content)
                         
                         
