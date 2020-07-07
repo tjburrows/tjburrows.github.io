@@ -454,12 +454,12 @@
                                     fields = ['temperature', 'apparentTemperature', 'probabilityOfPrecipitation']
                                     var localMidnight = new Date(validDay[i])
                                     localMidnight.setMinutes(localMidnight.getMinutes() + localMidnight.getTimezoneOffset())
-                                    var tempData = generateDataOnDate(gridProps, fields, localMidnight)
+                                    var tempData = generateDataOnDate(gridProps, fields, localMidnight, 25)
                                    
                                    
                                     var xmin = localMidnight
                                     var xmax = new Date(xmin)
-                                    xmax.setHours(xmax.getHours() + 23)
+                                    xmax.setHours(xmax.getHours() + 24)
                                     var div = document.createElement('div')
                                     div.style.width = "90%"
                                     div.style.display = "inline-block"
@@ -476,7 +476,6 @@
                                             fixedrange: true,
                                             showgrid:false,
                                             range: [xmin, xmax],
-                                            
                                         },
                                         yaxis: {
                                             fixedrange: true,
@@ -490,7 +489,7 @@
                                             yanchor: 'top',
                                             traceorder: 'reversed',
                                         },
-                                        margin: {b:30, t:40,l:30,r:0},
+                                        margin: {b:30, t:40,l:30,r:30},
                                     }
 
                                     var config = {
@@ -546,7 +545,7 @@
                                             gridcolor:'rgba(0,0,0,0.25)',
                                         },
                                         showlegend: false,
-                                        margin: {b:30, t:40,l:30,r:0},
+                                        margin: {b:30, t:40,l:30,r:30},
                                     }
                                     
                                     traces = []
