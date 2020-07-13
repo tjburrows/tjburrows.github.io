@@ -45,7 +45,7 @@
   <body style='text-align:center'>
     <div id="search" style='margin-top:20px;display:flex;height:32px;align-items:center;justify-content:center;max-width:500px;margin:0 auto; margin-bottom:20px'>
         <button id='button1' onclick="getCurrentLocation()" class="fa fa-location-arrow fa-border" style="cursor:pointer;height:100%;"></button>
-        <input id='textinput' type="text" style='height:100%;width:90%;'>
+        <input id='textinput' type="text" style='height:100%;width:90%;' value='Somerville, MA'>
         <button id='button2' onclick="geocode()" class="fa fa-search fa-border" style="cursor:pointer;height:100%;"></button>
         <button id='button3' onclick="help()" class="fa fa-question fa-border" style="cursor:pointer;height:100%;"></button>
     </div>
@@ -64,7 +64,6 @@
         //  Create text search box
         var loc = document.getElementById("textinput")
         mapDrawn = false
-        loc.setAttribute("value", "Atlanta, GA");
         
         //  Allow pressing enter to submit
         loc.addEventListener("keyup", function(event) {
@@ -277,8 +276,9 @@
                 fetch_retry(pointsJson.properties.forecast, {method:'GET'}, 5)
                 .then(function(response) { return response.json(); })
                 .then(function(json) {
+                    console.log("daydata:", json)
                     dayProps = json.properties
-                    console.log("daydata:", dayProps)
+                    
                     
                     //  Print text summary of present forecast
                     nowDiv = document.createElement("div")
