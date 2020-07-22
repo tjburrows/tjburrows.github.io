@@ -4,5 +4,7 @@
 - title: "CV"
   href: "/cv/"
   
-- title: "Weather"
-  href: "/weather/"
+- title: "Projects"
+  subcategories:
+    - subtitle: "Weather"
+      subhref: "/weather/"
