@@ -8,7 +8,7 @@ permalink: /
 
 I am a PhD candidate in the Woodruff School of Mechanical Engineering at Georgia Institute of Technology, under [Dr. Ari Glezer](http://fmrl.gatech.edu).  My research is in experimental fluid mechanics.  More specifically, I study the effect of active flow control on the flow separation and resulting streamwise vortices in offset diffusers and its effects on aircraft engine performance.
 
-Through my research I have developed skills in prototyping, experimental design, data analysis and visualization. Outside of my research, I have an interest in high performance computing, modeling and simulation, and data science, which I have pursued in part through a minor in computational science and engineering.  Besides this classroom experience, I pursue independent projects in areas including computational fluid dynamics and data science.
+Through my research I have developed skills in prototyping, experimental design, data analysis and visualization. Outside of my research, I have an interest in high performance computing, modeling and simulation, and data science, which I have pursued in part through a minor in computational science and engineering.  Besides this classroom experience, I pursue independent projects in areas including computational fluid dynamics and data visualization.
 
 ## Contact
 
