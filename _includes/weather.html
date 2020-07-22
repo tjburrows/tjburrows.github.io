@@ -12,8 +12,10 @@
         }
         
         .content {
-            display: none
+/*             display: none */
+            max-height: 0;
             overflow: hidden;
+            transition: max-height 0.2s ease-out;
             background-color: rgba(0,0,0,0.02);
             margin-bottom: 0px;
         }
@@ -254,6 +256,7 @@
                     .then(function(json) {
                         console.log('observation:', json)
                         currentTemp = json.properties.temperature.value
+                        heatindex = json.properties.heatIndex.value
                         if (json.properties.temperature.unitCode.includes('degC')) {
                             currentTemp = Math.round(c2f(currentTemp))
                             json.properties.temperature.unitCode.includes = 'degF'
@@ -261,14 +264,30 @@
                         else {
                             currentTemp = Math.round(currentTemp)
                         }
+                        if (json.properties.heatIndex.unitCode.includes('degC')) {
+                            heatindex = Math.round(c2f(heatindex))
+                            json.properties.heatIndex.unitCode.includes = 'degF'
+                        }
+                        else {
+                            heatindex = Math.round(heatindex)
+                        }
                         nowDiv = document.getElementById('conditions')
                         nowDiv.style['text-align'] = 'center'
                         var currentConditions = document.createElement("h3");
+                        currentConditions.style['margin-bottom'] = '0px'
                         currentConditions.style['margin-top'] = '0px'                            
-//                             var p1 = document.createElement("strong");
                         var temp = document.createTextNode(currentTemp.toString() + degreeSymbol + ' ' + json.properties.textDescription);
                         currentConditions.appendChild(temp)
                         nowDiv.appendChild(currentConditions)
+                        if (heatindex != currentTemp) {
+                            var currentConditions2 = document.createElement("p");
+                            currentConditions2.style['margin-top'] = '0px' 
+                            currentConditions2.style['font-size'] = '18px'
+                            var temp = document.createTextNode('Feels Like ' + heatindex.toString() + degreeSymbol);
+                            currentConditions2.appendChild(temp)
+                            nowDiv.appendChild(currentConditions2)
+                        }
+                        
                     })
                 })
                 
@@ -297,15 +316,12 @@
                     nowDiv.appendChild(middleColumn)
                     document.getElementById('summary').appendChild(nowDiv)
                 })
+                .then(() => {
+                    
                 
                 //  Create detailed forecasts
                 fetch_retry(pointsJson.properties.forecastGridData, {method:'GET'}, 5)
                 .then(function(response) {
-//                     var lastModifiedHeader = response.headers.get('Last-Modified')
-//                     console.log(lastModifiedHeader)
-//                     var gridLastModified = ((new Date() - new Date(lastModifiedHeader)) / (1000. * 60 * 60)).toFixed(1)
-//                     var div = document.createTextNode('Weather.gov Forecast from ' + gridLastModified.toString() + ' Hours ago')
-//                     document.getElementById("days").appendChild(div)
                     return response.json()})
                 .then(function(gridJson) { 
                     if (gridJson == null || gridJson.length == 0 || gridJson.properties == undefined) {
@@ -443,20 +459,37 @@
                             return function() {
                             this.classList.toggle("active");                            
                             var content = this.nextElementSibling
-                            if (content.style.display === "block") {
-                                content.style.display = "none";
-                            } 
-                            else {
-                                content.style.display = "block";
+                            if (content.style.maxHeight){
+                                content.style.maxHeight = null;
+                            } else {
+                                
+//                             }
+//                             if (content.style.display === "block") {
+//                                 content.style.display = "none";
+//                             } 
+//                             else {
+//                                 content.style.display = "block";
                                 if (!content.classList.contains('generated')) {
                                     content.classList.add("generated")
                                     
                                     fields = ['temperature', 'apparentTemperature', 'probabilityOfPrecipitation']
                                     var localMidnight = new Date(validDay[i])
                                     localMidnight.setMinutes(localMidnight.getMinutes() + localMidnight.getTimezoneOffset())
+                                    
+                                    //  Loop over day data and find entries on this date
+//                                     for (let j = 0; j < dayProps.periods.length; j++) {
+//                                         if (validDay[i] == dayProps.periods[j].startTime.split('T')[0]) {
+//                                             const text = (dayProps.periods[j].isDaytime ? 'Day: ' : 'Night: ') + dayProps.periods[j].detailedForecast
+//                                             const descrip = document.createTextNode(text)
+//                                             var div = document.createElement('p')
+//                                             div.style['text-align'] = 'left'
+//                                             div.style['font-size'] = '20px'
+//                                             div.appendChild(descrip)
+//                                             content.appendChild(div)
+//                                         }
+//                                     }
+                                    
                                     var tempData = generateDataOnDate(gridProps, fields, localMidnight, 25)
-                                   
-                                   
                                     var xmin = localMidnight
                                     var xmax = new Date(xmin)
                                     xmax.setHours(xmax.getHours() + 24)
@@ -561,7 +594,7 @@
                                     }
                                     Plotly.newPlot(elem, traces, layout, config)
                                 }
-                                
+                                content.style.maxHeight = content.scrollHeight + "px";
                             }
                         }}(i)
                         
@@ -577,56 +610,12 @@
                         var content = document.createElement('h1')
                         content.classList.add('content')
                         content.style.width = '100%'
-                        content.style.height = 400
+//                         content.style.height = '400px'
                         document.getElementById("days").appendChild(content)
                         
                         
                     }
-                    
-                    //  Generate plots
-//                     clearID('graphs')
-//                     gridcolor = '#000'
-//                     for (var key of Object.keys(dataStruct)) {
-//                         var div = document.createElement(key);
-//                         div.style.width = "100%";
-//                         div.style.display = "inline-block";
-//                         elem = document.getElementById("graphs").appendChild(div)
-//                         title = key
-//                         if (dataStruct[key].unit != '')
-//                             title += ' (' + dataStruct[key].unit + ')'
-//                         var layout = {
-//                             paper_bgcolor:'rgba(0,0,0,0)',
-//                             plot_bgcolor:'rgba(0,0,0,0)',
-//                             title: title,
-//                             xaxis: {
-//                                 type:'date',
-//                                 tickformat: '%b %-d, %-I %p',
-//                                 fixedrange: true,
-//                             },
-//                             yaxis: {
-//                                 fixedrange: true,
-//                             },
-// 
-//                         }
-//                         var config = {
-//                             responsive: true,
-//                             displayModeBar: false,
-//                         }
-//                         var trace1 = {
-//                             x: dataStruct[key].time,
-//                             y: dataStruct[key].data,
-//                             mode:'lines',
-//                             type:'scatter',
-//                             line: {
-//                                 color: '#000',
-//                                 width: 3,
-//                             },
-//                         }
-//                         if (dataStruct[key].unit == 'percent') {
-//                             layout.yaxis.range = [0, 100]
-//                         }
-//                         Plotly.newPlot(elem, [trace1], layout, config)
-//                     }
+                })
                 })
             })
         }
