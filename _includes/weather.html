@@ -279,14 +279,14 @@
                         var temp = document.createTextNode(currentTemp.toString() + degreeSymbol + ' ' + json.properties.textDescription);
                         currentConditions.appendChild(temp)
                         nowDiv.appendChild(currentConditions)
-                        if (heatindex != currentTemp) {
-                            var currentConditions2 = document.createElement("p");
-                            currentConditions2.style['margin-top'] = '0px' 
-                            currentConditions2.style['font-size'] = '18px'
-                            var temp = document.createTextNode('Feels Like ' + heatindex.toString() + degreeSymbol);
-                            currentConditions2.appendChild(temp)
-                            nowDiv.appendChild(currentConditions2)
-                        }
+//                         if (heatindex != currentTemp) {
+//                             var currentConditions2 = document.createElement("p");
+//                             currentConditions2.style['margin-top'] = '0px' 
+//                             currentConditions2.style['font-size'] = '18px'
+//                             var temp = document.createTextNode('Feels Like ' + heatindex.toString() + degreeSymbol);
+//                             currentConditions2.appendChild(temp)
+//                             nowDiv.appendChild(currentConditions2)
+//                         }
                         
                     })
                 })
