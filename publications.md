@@ -11,6 +11,10 @@ Travis J. Burrows, Bojan Vukasinovic, Matthew T. Lakebrink, Mortaza Mani, and Ar
 _International Journal of Heat and Fluid Flow_, Volume 75, 2019.<br>
 
 ## Conference Papers
+[**Controlled Flow Dynamics in a Serpentine Diffuser with a Cowl Inlet**](https://arc.aiaa.org/doi/abs/10.2514/6.2020-2951) <br>
+Travis J. Burrows, Bojan Vukasinovic, Ari Glezer, Matthew T. Lakebrink, and Mortaza Mani <br>
+_AIAA Aviation 2020 Forum_. June, 2020.<br>
+
 [**Control of a Transonic Shock in a Serpentine Diffuser using Surface Fluidic Actuation**](https://arc.aiaa.org/doi/10.2514/6.2019-3687) <br>
 Travis J. Burrows, Bojan Vukasinovic, and Ari Glezer <br>
 _AIAA Aviation 2019 Forum_. June, 2019.<br>
@@ -19,8 +23,7 @@ _AIAA Aviation 2019 Forum_. June, 2019.<br>
 Travis J. Burrows, Bojan Vukasinovic, and Ari Glezer <br>
 _2018 Flow Control Conference_. June, 2018.<br>
 
-[**Fluidic Control of an Aggressive Offset Diffuser for a
-Supersonic Inlet**](https://arc.aiaa.org/doi/10.2514/6.2017-4304) <br>
+[**Fluidic Control of an Aggressive Offset Diffuser for a Supersonic Inlet**](https://arc.aiaa.org/doi/10.2514/6.2017-4304) <br>
 Travis J. Burrows, Bojan Vukasinovic, and Ari Glezer <br>
 _47th AIAA Fluid Dynamics Conference_. June, 2017.<br>
 

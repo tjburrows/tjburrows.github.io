@@ -6,9 +6,9 @@ permalink: /
 
 {% include image.html url="images/photo.jpg" caption="Jan 2018" max_width="300px" align="right" %}
 
-I am a PhD candidate in the Woodruff School of Mechanical Engineering at Georgia Institute of Technology, under [Dr. Ari Glezer](http://fmrl.gatech.edu).  My research is in experimental fluid mechanics.  More specifically, I study the effect of active flow control on the flow separation and resulting three-dimensional vortical structure inside offset diffusers, and its effects on aircraft engine performance.
+I am a PhD candidate in the Woodruff School of Mechanical Engineering at Georgia Institute of Technology, under [Dr. Ari Glezer](https://fmrl.gatech.edu).  My research is in experimental fluid mechanics.  More specifically, I study the effect of active flow control on the flow separation and resulting streamwise vortices in offset diffusers and its effects on aircraft engine performance.
 
-I am looking for a full-time research position in thermal or fluidic engineering, physics simulation, applied machine learning, high performance computing, or experimental or computational development/prototyping work, to start after my expected graduation May 2020. Through my research I have developed a heightened physical intuition for heat and fluid flow, skills in prototyping, experimental design, data analysis and visualization, and the the ability to communicate my research clearly in collaborations, presentations, and research articles. Outside of experimental research, I pursue self-study and independent projects in areas including computational heat transfer and fluid mechanics, machine learning, and Linux. 
+Through my research I have developed skills in prototyping, experimental design, data analysis and visualization. Outside of my research, I have an interest in high performance computing, modeling and simulation, and data science, which I have pursued in part through a minor in computational science and engineering.  Besides this classroom experience, I pursue independent projects in areas including computational fluid dynamics and data science.
 
 ## Contact
 
