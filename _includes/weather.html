@@ -11,8 +11,25 @@
             background-color: #d3d3d3;
         }
         
+        .collapsible:after {
+            display: flex;
+            font-family: FontAwesome;
+            content: '\f055';
+            font-size: 16px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .active:after {
+            display: flex;
+            font-family: FontAwesome;
+            content: "\f056";
+            font-size: 16px;
+            justify-content: center;
+            align-items: center;
+        }
+            
         .content {
-/*             display: none */
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.2s ease-out;
@@ -394,7 +411,7 @@
                         div.style.cursor = 'Pointer'
                         div.style.border='none'
                         div.style.width = "100%";
-                        div.style.display = "inline-block";
+                        div.style.display = "flex";
                         div.style['margin'] = '0px'
                         div.style['padding'] = '0px'
                         let buttonElem = document.getElementById("days").appendChild(div)
@@ -537,14 +554,15 @@
                         }}(i)
                         
                         //  D3 bar
-                        const svgBarBoxH = 30
+                        const svgBarBoxH = 40
                         const svgBarH = 20
                         const svgBarPaddingW = 10
                         const svgBarTextWidth = 40
                         const svgBarLabelPadding = 40
                         const svgBarDegreeLabelPadding = 4
                         const xExtent = [minT, maxT]
-                        const xRange = [svgBarTextWidth + svgBarLabelPadding, buttonElem.clientWidth - svgBarLabelPadding]
+                        const plusPadding = 14
+                        const xRange = [svgBarTextWidth + svgBarLabelPadding, buttonElem.clientWidth - svgBarLabelPadding - plusPadding]
                         const barXScale = d3.scaleLinear().range(xRange).domain(xExtent)
                         dateFormatter = d3.timeFormat('%a')
                         dateParser = d3.timeParse('%Y-%m-%d')
@@ -552,14 +570,11 @@
                             .append('svg')
                             .attr("width", '100%')
                             .attr("height", svgBarBoxH)
-//                             .attr("viewBox", "0 0 " +  + buttonElem.clientWidth.toString() + " " + svgBarBoxH.toString())
-//                             .attr('preserveAspectRatio', 'none')
                         svgBar.append('text')
                             .attr('x', svgBarTextWidth)
                             .attr('y', 0.5 * svgBarBoxH)
                             .attr('dominant-baseline', 'middle')
                             .attr('text-anchor', 'end')  
-//                             .style('font-size', 12 + 'px')
                             .style('font-weight', 'bold')
                             .text(((new Date(validDay[i])).getUTCDate() == new Date().getDate()) ? 'Today' : dateFormatter(dateParser(validDay[i])))
                         const xScaleMin = barXScale(gridProps.minTemperature.values[i].value)
