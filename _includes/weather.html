@@ -42,6 +42,9 @@
     <!-- leaflet-radar -->
     <link rel="stylesheet" href="/css/leaflet-radar.css"/>
     <script src="/js/leaflet-radar.js"></script>
+    
+    <!-- d3 -->
+    <script src="https://d3js.org/d3.v5.min.js"></script>
   </head>
   
   <body style='text-align:center'>
@@ -189,6 +192,8 @@
             })
             return dataStruct
         }
+        
+        
         
         //  Get weather data
         var degreeSymbol = String.fromCharCode(176)
@@ -384,91 +389,24 @@
                         
                         validDay[i] = gridProps.minTemperature.values[i].validTime.split('T')[0]
                         
-                        trace1 = {
-                            x: [gridProps.minTemperature.values[i].value],
-                            y: [validDay[i]],
-                            type: 'bar',
-                            orientation: 'h',
-                            marker: {
-                                color: 'rgba(1,1,1,0.0)'
-                            },
-                            text: Math.round(gridProps.minTemperature.values[i].value).toString() + degreeSymbol,
-                            textposition: 'outside',
-                        }
-                        
-                        trace2 = {
-                            x:  [gridProps.maxTemperature.values[i].value-gridProps.minTemperature.values[i].value],
-                            y: [validDay[i]],
-                            type: 'bar',
-                            marker: {
-                                color: '#737373'
-                            },
-                            orientation: 'h',
-                            text: Math.round(gridProps.maxTemperature.values[i].value).toString() + degreeSymbol,
-                            textposition: 'outside',
-                        }
-                        
-                        var layout = {
-                            paper_bgcolor:'rgba(0,0,0,0)',
-                            plot_bgcolor:'rgba(0,0,0,0)',
-                            showlegend: false,
-                            margin: {b:3, t:3,l:40,r:0},
-                            height: 35,
-                            xaxis: {
-                                showgrid: false,
-                                showline: false,
-                                zeroline: false,
-                                fixedrange: true,
-                                showticklabels: false,
-                                range: [minT-3, maxT+3],
-                            },
-                            yaxis: {
-                                showline: false,
-                                showgrid: false,
-                                zeroline: false,
-                                autotick:false,
-                                tickformat: '<b>%a</b>',
-                                fixedrange: true,
-                            },
-                            barmode: 'stack',
-                        }
-                        
-                        var config = {
-                            responsive: true,
-                            displayModeBar: false,
-                            staticPlot: true,
-                        }
-                        
-                        if (i == 0) {
-                            if ((new Date(validDay[i])).getUTCDate() == new Date().getDate()) {
-                                trace1.y = ['<b>Today</b>']
-                                trace2.y = ['<b>Today</b>']
-                            }
-                        }
-                        
                         var div = document.createElement('button');
                         div.style.outline = 'none'
                         div.style.cursor = 'Pointer'
                         div.style.border='none'
                         div.style.width = "100%";
                         div.style.display = "inline-block";
-                        elem = document.getElementById("days").appendChild(div)
-                        elem.classList.add('collapsible')
+                        div.style['margin'] = '0px'
+                        div.style['padding'] = '0px'
+                        let buttonElem = document.getElementById("days").appendChild(div)
+                        buttonElem.classList.add('collapsible')
                         
-                        elem.onclick =  function(i) {
+                        buttonElem.onclick =  function(i) {
                             return function() {
                             this.classList.toggle("active");                            
                             var content = this.nextElementSibling
                             if (content.style.maxHeight){
                                 content.style.maxHeight = null;
                             } else {
-                                
-//                             }
-//                             if (content.style.display === "block") {
-//                                 content.style.display = "none";
-//                             } 
-//                             else {
-//                                 content.style.display = "block";
                                 if (!content.classList.contains('generated')) {
                                     content.classList.add("generated")
                                     
@@ -496,7 +434,7 @@
                                     var div = document.createElement('div')
                                     div.style.width = "90%"
                                     div.style.display = "inline-block"
-                                    elem = content.appendChild(div)
+                                    let elem = content.appendChild(div)
 
                                     var layout = {
                                         height: 200,
@@ -598,19 +536,68 @@
                             }
                         }}(i)
                         
-                        var div = document.createElement('div');
-                        div.style.width = "100%";
-                        div.style.display = "inline-block";
-                        div.type = 'button'
-                        elem = elem.appendChild(div)
-                        Plotly.newPlot(elem, [trace1,trace2], layout, config);
-                        
-                        
+                        //  D3 bar
+                        const svgBarBoxH = 30
+                        const svgBarH = 20
+                        const svgBarPaddingW = 10
+                        const svgBarTextWidth = 40
+                        const svgBarLabelPadding = 40
+                        const svgBarDegreeLabelPadding = 4
+                        const xExtent = [minT, maxT]
+                        const xRange = [svgBarTextWidth + svgBarLabelPadding, buttonElem.clientWidth - svgBarLabelPadding]
+                        const barXScale = d3.scaleLinear().range(xRange).domain(xExtent)
+                        dateFormatter = d3.timeFormat('%a')
+                        dateParser = d3.timeParse('%Y-%m-%d')
+                        const svgBar = d3.select(buttonElem)
+                            .append('svg')
+                            .attr("width", '100%')
+                            .attr("height", svgBarBoxH)
+//                             .attr("viewBox", "0 0 " +  + buttonElem.clientWidth.toString() + " " + svgBarBoxH.toString())
+//                             .attr('preserveAspectRatio', 'none')
+                        svgBar.append('text')
+                            .attr('x', svgBarTextWidth)
+                            .attr('y', 0.5 * svgBarBoxH)
+                            .attr('dominant-baseline', 'middle')
+                            .attr('text-anchor', 'end')  
+//                             .style('font-size', 12 + 'px')
+                            .style('font-weight', 'bold')
+                            .text(((new Date(validDay[i])).getUTCDate() == new Date().getDate()) ? 'Today' : dateFormatter(dateParser(validDay[i])))
+                        const xScaleMin = barXScale(gridProps.minTemperature.values[i].value)
+                        const xScaleMax = barXScale(gridProps.maxTemperature.values[i].value)
+                        svgBar.append('rect')
+                            .attr('x', xScaleMin + 0.5 * svgBarH)
+                            .attr('y', 0.5 * (svgBarBoxH - svgBarH))
+                            .attr('width', xScaleMax - xScaleMin - svgBarH)
+                            .attr('height', svgBarH)
+                            .attr('fill', '#737373')
+                        svgBar.append('text')
+                            .attr('x', xScaleMin - svgBarDegreeLabelPadding)
+                            .attr('y', 0.5 * svgBarBoxH)
+                            .attr('text-anchor', 'end')  
+                            .attr('dominant-baseline', 'middle')
+                            .text(Math.round(gridProps.minTemperature.values[i].value).toString() + degreeSymbol)
+                        svgBar.append('text')
+                            .attr('x', xScaleMax + svgBarDegreeLabelPadding)
+                            .attr('y', 0.5 * svgBarBoxH)
+                            .attr('text-anchor', 'start')  
+                            .attr('dominant-baseline', 'middle')
+                            .text(Math.round(gridProps.maxTemperature.values[i].value).toString() + degreeSymbol)
+                        svgBar.append('circle')
+                            .attr('cx', xScaleMin + 0.5 * svgBarH)
+                            .attr('cy', 0.5 * svgBarBoxH)
+                            .attr('r', 0.5 * svgBarH)
+                            .attr('fill', '#737373')
+                        svgBar.append('circle')
+                            .attr('cx', xScaleMax - 0.5 * svgBarH)
+                            .attr('cy', 0.5 * svgBarBoxH)
+                            .attr('r', 0.5 * svgBarH)
+                            .attr('fill', '#737373')
+                            
                         // create content of collapsible
                         var content = document.createElement('h1')
                         content.classList.add('content')
                         content.style.width = '100%'
-//                         content.style.height = '400px'
+
                         document.getElementById("days").appendChild(content)
                         
                         
