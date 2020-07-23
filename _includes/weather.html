@@ -278,27 +278,33 @@
                     .then(function(json) {
                         console.log('observation:', json)
                         currentTemp = json.properties.temperature.value
-                        heatindex = json.properties.heatIndex.value
-                        if (json.properties.temperature.unitCode.includes('degC')) {
-                            currentTemp = Math.round(c2f(currentTemp))
-                            json.properties.temperature.unitCode.includes = 'degF'
-                        }
-                        else {
-                            currentTemp = Math.round(currentTemp)
-                        }
-                        if (json.properties.heatIndex.unitCode.includes('degC')) {
-                            heatindex = Math.round(c2f(heatindex))
-                            json.properties.heatIndex.unitCode.includes = 'degF'
-                        }
-                        else {
-                            heatindex = Math.round(heatindex)
-                        }
                         nowDiv = document.getElementById('conditions')
                         nowDiv.style['text-align'] = 'center'
                         var currentConditions = document.createElement("h3");
                         currentConditions.style['margin-bottom'] = '0px'
-                        currentConditions.style['margin-top'] = '0px'                            
-                        var temp = document.createTextNode(currentTemp.toString() + degreeSymbol + ' ' + json.properties.textDescription);
+                        currentConditions.style['margin-top'] = '0px' 
+                        var statusString = ''
+                        if (currentTemp === 0 || currentTemp) {
+                            if (json.properties.temperature.unitCode.includes('degC')) {
+                                currentTemp = Math.round(c2f(currentTemp))
+                                json.properties.temperature.unitCode.includes = 'degF'
+                            }
+                            else {
+                                currentTemp = Math.round(currentTemp)
+                            }
+                            statusString += currentTemp.toString() + degreeSymbol + ' '
+                        }
+//                         heatindex = json.properties.heatIndex.value
+                        
+//                         if (json.properties.heatIndex.unitCode.includes('degC')) {
+//                             heatindex = Math.round(c2f(heatindex))
+//                             json.properties.heatIndex.unitCode.includes = 'degF'
+//                         }
+//                         else {
+//                             heatindex = Math.round(heatindex)
+//                         }
+                        statusString += json.properties.textDescription
+                        var temp = document.createTextNode(statusString);
                         currentConditions.appendChild(temp)
                         nowDiv.appendChild(currentConditions)
 //                         if (heatindex != currentTemp) {
