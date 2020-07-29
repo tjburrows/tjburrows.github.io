@@ -83,6 +83,10 @@
     <div id="days" style='text-align:center; max-width:700px;margin:0 auto;'></div>
     <div id="graphs" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
     <script>
+        var fetchOptions = {
+            method:'GET',
+        }
+        
         //  Create text search box
         var loc = document.getElementById("textinput")
         mapDrawn = false
@@ -251,7 +255,7 @@
                 marker = L.marker([lat,lon]).addTo(map);
             }
             
-            fetch_retry('https://api.weather.gov/points/' + lat + ',' + lon, {method:'GET'}, 5)
+            fetch_retry('https://api.weather.gov/points/' + lat + ',' + lon, fetchOptions, 5)
             .then(function(response) { return response.json() })
             .then(function(pointsJson) { 
                 if (pointsJson == null || pointsJson.length == 0) {
@@ -264,7 +268,7 @@
             })
             .then(function(pointsJson) {
                 clearID('conditions')
-                fetch_retry(pointsJson.properties.observationStations, {method:'GET'}, 5)
+                fetch_retry(pointsJson.properties.observationStations, fetchOptions, 5)
                 .then(function(response) { return response.json(); })
                 .then(function(json) {
                     var station = json.features[0]
@@ -273,7 +277,7 @@
                     if (station.properties.elevation.unitCode.includes('unit:m'))
                         elevation = m2ft(elevation)
                     var stationID = station.properties.stationIdentifier
-                    fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations/latest?require_qc=true', {method:'GET'}, 5)
+                    fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations/latest?require_qc=true', fetchOptions, 5)
                     .then(function(response) {return response.json()})
                     .then(function(json) {
                         console.log('observation:', json)
@@ -320,7 +324,7 @@
                 })
                 
                 //  Create day by day summary
-                fetch_retry(pointsJson.properties.forecast, {method:'GET'}, 5)
+                fetch_retry(pointsJson.properties.forecast, fetchOptions, 5)
                 .then(function(response) { return response.json(); })
                 .then(function(json) {
                     console.log("daydata:", json)
@@ -344,11 +348,9 @@
                     nowDiv.appendChild(middleColumn)
                     document.getElementById('summary').appendChild(nowDiv)
                 })
-                .then(() => {
-                    
-                
+
                 //  Create detailed forecasts
-                fetch_retry(pointsJson.properties.forecastGridData, {method:'GET'}, 5)
+                fetch_retry(pointsJson.properties.forecastGridData, fetchOptions, 5)
                 .then(function(response) {
                     return response.json()})
                 .then(function(gridJson) { 
@@ -623,7 +625,6 @@
                         
                         
                     }
-                })
                 })
             })
         }
