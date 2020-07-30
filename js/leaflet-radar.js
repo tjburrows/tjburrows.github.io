@@ -42,18 +42,17 @@ L.Control.Radar = L.Control.extend({
             this.container
         );
 
-        this.checkbox = document.createElement(`input`);
+        this.checkbox = document.createElement(`button`);
+        this.checkbox.innerHTML = '<i class="fa fa-play" aria-hidden="true"></i>'
         this.checkbox.id = `leaflet-radar-toggle`;
-        this.checkbox.type = `checkbox`;
-        this.checkbox.checked = false;
         this.checkbox.onclick = () => this.toggle();
 
         checkbox_div.appendChild(this.checkbox);
 
-        let checkbox_label = document.createElement(`span`);
-        checkbox_label.innerText = `Radar`;
-
-        checkbox_div.appendChild(checkbox_label);
+//         let checkbox_label = document.createElement(`span`);
+//         checkbox_label.innerText = `Radar`;
+// 
+//         checkbox_div.appendChild(checkbox_label);
 
         let slider_div = L.DomUtil.create(
             `div`,
@@ -74,10 +73,7 @@ L.Control.Radar = L.Control.extend({
             this.container
         );
 
-        this.setDisabled(true);
-        this.isPaused = true;
-        this.toggle()
-        this.checkbox.checked = true
+        this.checkbox.checked = false
         this.toggle()
         return this.container;
     },
@@ -99,34 +95,39 @@ L.Control.Radar = L.Control.extend({
         this.timestamp_div.innerText = ``;
     },
 
-    toggle: function (paused=false) {
+    toggle: function () {
+        this.checkbox.checked = this.checkbox.checked ? false : true
         if (!this.checkbox.checked) {
-            this.setDisabled(true);
-            this.removeLayers();
-            return;
-        }
-
-        this.setDisabled(false);
-
-        this.timeLayers = this.generateLayers();
-        this.addLayers(this.timeLayers);
-
-        this.slider.max = this.timeLayers.length - 1;
-
-        this.timeLayerIndex = 0;
-
-        this.isPaused = false;
-
-        this.slider.oninput = () => {
-
-            this.hideLayerByIndex(this.timeLayerIndex);
-            this.timeLayerIndex = +this.slider.value;
-            this.showLayerByIndex(this.timeLayerIndex);
-
+            this.checkbox.innerHTML = '<i class="fa fa-play" aria-hidden="true"></i>'
             this.isPaused = true;
-        };
+        }
+        else {
+            this.checkbox.innerHTML = '<i class="fa fa-pause" aria-hidden="true"></i>'
+            
+            const tempLayers = this.generateLayers();
+            this.removeLayers();
+            this.addLayers(tempLayers);
+            this.timeLayers = tempLayers
 
-        this.setTransitionTimer();
+            this.slider.max = this.timeLayers.length - 1;
+
+//             this.timeLayerIndex = 0;
+
+            this.isPaused = false;
+
+            this.slider.oninput = () => {
+
+                this.hideLayerByIndex(this.timeLayerIndex);
+                this.timeLayerIndex = +this.slider.value;
+                this.showLayerByIndex(this.timeLayerIndex);
+
+                this.isPaused = true;
+                this.checkbox.innerHTML = '<i class="fa fa-play" aria-hidden="true"></i>'
+            };
+            if (this.timeLayerIndex != 0)
+                this.timeLayerIndex--
+            this.setTransitionTimer();
+        }
     },
 
     setTransitionTimer: function () {
@@ -164,6 +165,7 @@ L.Control.Radar = L.Control.extend({
     },
 
     addLayers: function () {
+        
         this.timeLayers.forEach(timeLayer => {
             timeLayer.tileLayer.setOpacity(0);
             timeLayer.tileLayer.addTo(this.map);
@@ -175,7 +177,7 @@ L.Control.Radar = L.Control.extend({
             timeLayer.tileLayer.removeFrom(this.map)
         );
         this.timeLayers = [];
-        this.timeLayerIndex = 0;
+//         this.timeLayerIndex = 0;
     },
 
     generateLayers: function () {
@@ -185,39 +187,37 @@ L.Control.Radar = L.Control.extend({
         const INTERVAL_LENGTH_HRS = 5;
 
         const currentTime = new Date();
+        function suffix(time) {  
+            switch(time) {
+                case 0:
+                    return '';
+                case 5:
+                    return '-m05m';
+                default:
+                    return '-m' + time + 'm';
+            }
+        }
+        
+        function timeString(time) {
+            const spaces = time.toLocaleTimeString().split(' ')
+            const colons = spaces[0].split(':')
+            return colons[0] + ':' + colons[1] + ' ' + spaces[1]
+        }
 
-        for (let i = 0; i <= TOTAL_INTERVALS; i++) {
-
-            const timeDiffMins =
-                TOTAL_INTERVALS * INTERVAL_LENGTH_HRS -
-                INTERVAL_LENGTH_HRS * i;
-
-            const suffix = (function(time) {  
-                switch(time) {
-                    case 0:
-                        return '';
-                    case 5:
-                        return '-m05m';
-                    default:
-                        return '-m' + time + 'm';
-                }
-                })(timeDiffMins);
-
-            const layerRequest = this.NEXRAD_LAYER + suffix;
+        for (let i = TOTAL_INTERVALS * INTERVAL_LENGTH_HRS; i >= 0; i -= INTERVAL_LENGTH_HRS) {
 
             const layer = L.tileLayer.wms(this.NEXRAD_URL, {
-                layers: layerRequest,
+                layers: this.NEXRAD_LAYER + suffix(i),
                 format: `image/png`,
                 transparent: true,
                 opacity: this.options.opacity,
-                zIndex: this.options.zIndex
+                zIndex: this.options.zIndex,
             });
 
-            const timeString = new Date(
-                currentTime.valueOf() - timeDiffMins * 60 * 1000
-            ).toLocaleTimeString();
+            const iTime = new Date(currentTime.valueOf() - i * 60 * 1000)
+            
             timeLayers.push({
-                timestamp: `${timeString} (-${timeDiffMins} min)`,
+                timestamp: `${timeString(iTime)} (-${i} min)`,
                 tileLayer: layer
             });
         }
@@ -225,6 +225,6 @@ L.Control.Radar = L.Control.extend({
     }
 });
 
-L.control.radar = function (options) {
+L.control.radar = function (options={}) {
     return new L.Control.Radar(options);
 };

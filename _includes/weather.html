@@ -241,7 +241,7 @@
                         {attribution: [osmAttribution, leafletRadarAttribution].join(" | "), dragging:!L.Browser.mobile}
                 ).addTo(map);
                 marker = L.marker([lat,lon]).addTo(map);
-                L.control.radar({}).addTo(map);
+                radar = L.control.radar().addTo(map);
                 map.on('dblclick', function(e) {
                 getWeather(e.latlng.lat, e.latlng.lng, true)
                 }).on('contextmenu', function(e) {
