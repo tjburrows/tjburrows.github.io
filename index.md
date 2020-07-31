@@ -15,3 +15,5 @@ Through my research I have developed skills in prototyping, experimental design,
 LinkedIn:&nbsp;&nbsp;[linkedin.com/in/tjburrows](https://www.linkedin.com/in/tjburrows)
 
 GitHub:&nbsp;&nbsp;&nbsp;&nbsp;[github.com/tjburrows](https://www.github.com/tjburrows)
+
+Email:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;travis [at] tjburrows [dot] com
