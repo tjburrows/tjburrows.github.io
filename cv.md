@@ -1,22 +1,6 @@
 ---
-layout: page
+layout: cvpdf
 title: CV
 permalink: /cv/
 ---
-
-Download [PDF version](../cv_pdf)
-
-## Education
-
-**MS, Mechanical Engineering, 2018**  <br>
-Georgia Institute of Technology
-
-**BS, Mechanical Engineering, 2014**  <br>
-North Carolina State University
-
-## Skills
-**Programming Languages** <br>
-C, C++, MATLAB, Python, Javascript
-
-**Software** <br>
-LabView, Siemens NX, LaVision Davis, Tecplot, Linux
+<iframe id="pdfframe" style="overflow:auto; height:100%; width:100%" src="/tjb_resume_website.pdf"></iframe>
