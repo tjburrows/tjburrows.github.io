@@ -23,3 +23,8 @@ C, C++, MATLAB, Python, Javascript, GPU, MPI, OpenMP, Pandas
 
 **Software** <br>
 LabView, Siemens NX, LaVision Davis, Tecplot, Linux
+
+**Laboratory** <br>
+Particle image velocimetry, pressure-sensitive paint, experimental flow
+visualization, measurement and signal processing, experimental design, laser and
+camera optics
