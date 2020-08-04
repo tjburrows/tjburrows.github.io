@@ -8,6 +8,6 @@ The following is an in-browser computational fluid dynamics (CFD) solver for the
 
 Choose from a few different grid sizes and Reynolds numbers (speed of the wall) and click start to compute the solution on your own device.  The velocity magnitude and convergence as a function of iteration are plotted in the first row, while comparisons of the results with literature (Ghia et al.) are plotted below for a couple centerline velocity profiles.
 
-Note that this is optimized for computer web browsers, and not mobile devices.
+**Note:** This is optimized for computer web browsers, not mobile devices.
 
 {% include lbm.html %}
