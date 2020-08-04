@@ -432,7 +432,7 @@ function start() {
         paper_bgcolor:'rgba(0,0,0,0)',
         plot_bgcolor:'rgba(0,0,0,0)',
     }
-    Plotly.newPlot("uprofile", profileData.slice(0,2), uprofileLayout, {responsive:true, staticPlot:false});
+    Plotly.newPlot("uprofile", profileData.slice(0,2), uprofileLayout, {responsive:true, staticPlot:true});
     Plotly.newPlot("vprofile", profileData.slice(2,4), vprofileLayout, {responsive:true, staticPlot:true});
 }
 </script>
