@@ -8,3 +8,5 @@
   subcategories:
     - subtitle: "Weather"
       subhref: "/weather/"
+    - subtitle: "CFD in Javascript"
+      subhref: "/lbm/"  
