@@ -62,14 +62,18 @@
 
     <!-- d3 -->
     <script src="https://d3js.org/d3.v5.min.js"></script>
+    
+    <!--  Custom US Boundary JS    -->
+    <script src="/js/usrand.js"></script>
   </head>
 
   <body style='text-align:center'>
     <div id="search" style='margin-top:20px;display:flex;height:32px;align-items:center;justify-content:center;max-width:500px;margin:0 auto; margin-bottom:20px'>
-        <button id='button1' onclick="getCurrentLocation()" class="fa fa-location-arrow fa-border" style="cursor:pointer;height:100%;"></button>
+        <button id='button0' title='Magic' onclick="getRandomLocation()" class="fa fa-magic fa-border" style="cursor:pointer;height:100%;"></button>
+        <button id='button1' title='Your Location' onclick="getCurrentLocation()" class="fa fa-location-arrow fa-border" style="cursor:pointer;height:100%;"></button>
         <input id='textinput' type="text" style='height:100%;width:90%;' value='Somerville, MA'>
-        <button id='button2' onclick="geocode()" class="fa fa-search fa-border" style="cursor:pointer;height:100%;"></button>
-        <button id='button3' onclick="help()" class="fa fa-question fa-border" style="cursor:pointer;height:100%;"></button>
+        <button id='button2' title='Search' onclick="geocode()" class="fa fa-search fa-border" style="cursor:pointer;height:100%;"></button>
+        <button id='button3' title='Help' onclick="help()" class="fa fa-question fa-border" style="cursor:pointer;height:100%;"></button>
     </div>
     <div id="errors" style='text-align:center; max-width:1000px;margin:0 auto; margin-bottom:20px'></div>
     <div id="now" style='text-align:left; max-width:1000px;margin:0 auto;'>
@@ -108,6 +112,11 @@
                     getWeather(position.coords.latitude, position.coords.longitude, true)
                 });
             }
+        }
+        
+        function getRandomLocation() {
+            const randCoords = randUSA()
+            getWeather(randCoords[0], randCoords[1], true)
         }
 
         //  Clear all child divs of an id
