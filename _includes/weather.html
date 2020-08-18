@@ -1,16 +1,16 @@
 <html lang="">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         .collapsible {
             background-color: transparent;
         }
-        
+
         .active, .collapsible:hover {
             background-color: #d3d3d3;
         }
-        
+
         .collapsible:after {
             display: flex;
             font-family: FontAwesome;
@@ -19,7 +19,7 @@
             justify-content: center;
             align-items: center;
         }
-        
+
         .active:after {
             display: flex;
             font-family: FontAwesome;
@@ -28,7 +28,7 @@
             justify-content: center;
             align-items: center;
         }
-            
+
         .content {
             max-height: 0;
             overflow: hidden;
@@ -37,33 +37,33 @@
             margin-bottom: 0px;
         }
     </style>
-    
+
     <!-- plotly -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    
+
     <!-- font awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    
+
     <!-- leaflet -->
-    <link rel="stylesheet" 
-        href="https://unpkg.com/leaflet@latest/dist/leaflet.css" 
-        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" 
+    <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@latest/dist/leaflet.css"
+        integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
         crossorigin=""
     />
-    <script 
-        src="https://unpkg.com/leaflet@latest/dist/leaflet.js" 
-        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" 
+    <script
+        src="https://unpkg.com/leaflet@latest/dist/leaflet.js"
+        integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
         crossorigin=""
     ></script>
-    
+
     <!-- leaflet-radar -->
     <link rel="stylesheet" href="/css/leaflet-radar.css"/>
     <script src="/js/leaflet-radar.js"></script>
-    
+
     <!-- d3 -->
     <script src="https://d3js.org/d3.v5.min.js"></script>
   </head>
-  
+
   <body style='text-align:center'>
     <div id="search" style='margin-top:20px;display:flex;height:32px;align-items:center;justify-content:center;max-width:500px;margin:0 auto; margin-bottom:20px'>
         <button id='button1' onclick="getCurrentLocation()" class="fa fa-location-arrow fa-border" style="cursor:pointer;height:100%;"></button>
@@ -79,18 +79,20 @@
     <div id="map" style='text-align:center; max-width:1000px;margin:0 auto;'>
         <div id="map1" style='width:100%; height:350px; display:inline-block'></div>
     </div>
-    
+
     <div id="days" style='text-align:center; max-width:700px;margin:0 auto;'></div>
     <div id="graphs" style='text-align:center; max-width:1000px;margin:0 auto;'></div>
     <script>
-        var fetchOptions = {
+
+
+        const fetchOptions = {
             method:'GET',
         }
-        
+
         //  Create text search box
-        var loc = document.getElementById("textinput")
-        mapDrawn = false
-        
+        const loc = document.getElementById("textinput")
+        var mapDrawn = false
+
         //  Allow pressing enter to submit
         loc.addEventListener("keyup", function(event) {
             if (event.keyCode === 13) {
@@ -98,7 +100,7 @@
                 document.getElementById("button2").click();
             }
         })
-        
+
         //  Get current location and run weather
         function getCurrentLocation() {
             if (navigator.geolocation) {
@@ -107,22 +109,22 @@
                 });
             }
         }
-        
+
         //  Clear all child divs of an id
         function clearID(id) {
-            var node = document.getElementById(id)
+            const node = document.getElementById(id)
             if (node !== null) {
                 while (node.hasChildNodes()) {
                     node.removeChild(node.lastChild);
                 }
             }
         }
-        
+
         function fetch_retry(url, options = {}, retries = 3) {
             const retryCodes = [408, 500, 502, 503, 504, 522, 524]
             return fetch(url, options)
             .then(res => {
-                if (res.ok) 
+                if (res.ok)
                     return res
                 if (retries > 0 && retryCodes.includes(res.status)) {
                     return fetch_retry(url, options, retries - 1)
@@ -132,57 +134,58 @@
             })
             .catch(console.error)
         }
-        
+
         //  Convert Celcius to Fahrenheit
         function c2f(celcius) {
             return celcius * 9.0 / 5.0 + 32.0
         }
-        
+
         //  Convert meters to feet
         function m2ft(meters) {
             return (meters * 100) / (12 * 2.54)
         }
-        
+
+
         const dayFind = /(\d+)D/
         const hourFind = /(\d+)H/
         function parseDuration(string) {
-            var hourOffset = 0
+            let hourOffset = 0
             if (string.includes('D'))
                 hourOffset += parseInt(string.match(dayFind)[1]) * 24
             if (string.includes('H'))
                 hourOffset += parseInt(string.match(hourFind)[1])
             return hourOffset
         }
-        
-        
+
+
         function generateDataOnDate(gridProps, fields, date, offset=24) {
             dataStruct = {}
             fields.forEach(function (field, index) {
                 if (field in gridProps) {
-                    numPoints = gridProps[field].values.length
-                    entryStruct = {'time':new Array(), 'data':new Array(), 'unit':''}
-                    
+                    const numPoints = gridProps[field].values.length
+                    const entryStruct = {'time':new Array(), 'data':new Array(), 'unit':''}
+
                     //  Extract parameter unit
                     if ('uom' in gridProps[field])
                         entryStruct.unit = gridProps[field].uom.split(':')[1]
-                        
+
                     //  Get date of today, and date in 24 hours
-                    datePlus24h = new Date(date)
+                    const datePlus24h = new Date(date)
                     datePlus24h.setHours(datePlus24h.getHours() + offset)
-                    
+
                     //  Create array of data
-                    for (var i = 0; i < numPoints; i++) {
-                        iso8601String = gridProps[field].values[i].validTime
-                        
-                        isoSplit = iso8601String.split('/')
-                        startTime = new Date(isoSplit[0])
-                        duration = parseDuration(isoSplit[1])
-                        
+                    for (let i = 0; i < numPoints; i++) {
+                        const iso8601String = gridProps[field].values[i].validTime
+
+                        const isoSplit = iso8601String.split('/')
+                        const startTime = new Date(isoSplit[0])
+                        const duration = parseDuration(isoSplit[1])
+
                         //  Only plot next 24 hours
                         if (startTime < datePlus24h) {
                             //  Repeat value for specified number of hours
-                            for (var h = 0; h < duration; h++) {
-                                currentTime = new Date(startTime)
+                            for (let h = 0; h < duration; h++) {
+                                const currentTime = new Date(startTime)
                                 currentTime.setHours(currentTime.getHours() + h)
                                 if (currentTime >= date && currentTime <= datePlus24h) {
                                     entryStruct.time.push(currentTime)
@@ -192,7 +195,7 @@
                         }
                     }
                     if (entryStruct.unit.includes('degC')) {
-                        for (var i = 0; i < entryStruct.data.length; i++) {
+                        for (let i = 0; i < entryStruct.data.length; i++) {
                             entryStruct.data[i] = c2f(entryStruct.data[i])
                         }
                         entryStruct.unit = degreeSymbol + 'F'
@@ -200,7 +203,7 @@
                     else if (entryStruct.unit.includes('degF'))
                         entryStruct.unit = degreeSymbol + 'F'
                     if (entryStruct.unit == 'mm') {
-                        for (var i = 0; i < entryStruct.data.length; i++) {
+                        for (let i = 0; i < entryStruct.data.length; i++) {
                             entryStruct.data[i] = entryStruct.data[i] / 25.4
                         }
                         entryStruct.unit = 'in'
@@ -213,23 +216,21 @@
             })
             return dataStruct
         }
-        
-        
-        
+
         //  Get weather data
-        var degreeSymbol = String.fromCharCode(176)
+        const degreeSymbol = String.fromCharCode(176)
         function getWeather(lat, lon, reverseGeo=false) {
-        
+
             if (reverseGeo) {
                 reverseGeocode(lat,lon)
             }
-            
+
             clearID('days')
             clearID('graphs')
             clearID('errors')
             clearID('summary')
             clearID('conditions')
-            
+
             //  Create map
             if (!mapDrawn) {
                 mapDrawn = true
@@ -254,10 +255,10 @@
                 map.removeLayer(marker)
                 marker = L.marker([lat,lon]).addTo(map);
             }
-            
+
             fetch_retry('https://api.weather.gov/points/' + lat + ',' + lon, fetchOptions, 5)
             .then(function(response) { return response.json() })
-            .then(function(pointsJson) { 
+            .then(function(pointsJson) {
                 if (pointsJson == null || pointsJson.length == 0) {
                     printError('Error: Weather at this location is not available from Weather.gov.')
                 }
@@ -271,12 +272,12 @@
                 fetch_retry(pointsJson.properties.observationStations, fetchOptions, 5)
                 .then(function(response) { return response.json(); })
                 .then(function(json) {
-                    var station = json.features[0]
+                    const station = json.features[0]
                     console.log('station:', station)
-                    var elevation = station.properties.elevation.value
+                    let elevation = station.properties.elevation.value
                     if (station.properties.elevation.unitCode.includes('unit:m'))
                         elevation = m2ft(elevation)
-                    var stationID = station.properties.stationIdentifier
+                    const stationID = station.properties.stationIdentifier
                     fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations/latest?require_qc=true', fetchOptions, 5)
                     .then(function(response) {return response.json()})
                     .then(function(json) {
@@ -284,10 +285,10 @@
                         currentTemp = json.properties.temperature.value
                         nowDiv = document.getElementById('conditions')
                         nowDiv.style['text-align'] = 'center'
-                        var currentConditions = document.createElement("h3");
+                        const currentConditions = document.createElement("h3");
                         currentConditions.style['margin-bottom'] = '0px'
-                        currentConditions.style['margin-top'] = '0px' 
-                        var statusString = ''
+                        currentConditions.style['margin-top'] = '0px'
+                        let statusString = ''
                         if (currentTemp === 0 || currentTemp) {
                             if (json.properties.temperature.unitCode.includes('degC')) {
                                 currentTemp = Math.round(c2f(currentTemp))
@@ -298,49 +299,31 @@
                             }
                             statusString += currentTemp.toString() + degreeSymbol + ' '
                         }
-//                         heatindex = json.properties.heatIndex.value
-                        
-//                         if (json.properties.heatIndex.unitCode.includes('degC')) {
-//                             heatindex = Math.round(c2f(heatindex))
-//                             json.properties.heatIndex.unitCode.includes = 'degF'
-//                         }
-//                         else {
-//                             heatindex = Math.round(heatindex)
-//                         }
+
                         statusString += json.properties.textDescription
-                        var temp = document.createTextNode(statusString);
+                        const temp = document.createTextNode(statusString)
                         currentConditions.appendChild(temp)
                         nowDiv.appendChild(currentConditions)
-//                         if (heatindex != currentTemp) {
-//                             var currentConditions2 = document.createElement("p");
-//                             currentConditions2.style['margin-top'] = '0px' 
-//                             currentConditions2.style['font-size'] = '18px'
-//                             var temp = document.createTextNode('Feels Like ' + heatindex.toString() + degreeSymbol);
-//                             currentConditions2.appendChild(temp)
-//                             nowDiv.appendChild(currentConditions2)
-//                         }
-                        
                     })
                 })
-                
+
                 //  Create day by day summary
                 fetch_retry(pointsJson.properties.forecast, fetchOptions, 5)
                 .then(function(response) { return response.json(); })
                 .then(function(json) {
                     console.log("daydata:", json)
-                    dayProps = json.properties
-                    
-                    
+                    const dayProps = json.properties
+
                     //  Print text summary of present forecast
-                    nowDiv = document.createElement("div")
+                    const nowDiv = document.createElement("div")
                     nowDiv.style['text-align'] = 'left'
                     nowDiv.style.display = 'flex'
-                    var middleColumn = document.createElement("div");
-                    middleColumn.style.width='100%'                            
-                    var p1 = document.createElement("p");
-                    var bold = document.createElement("b");
-                    var prefix = document.createTextNode(dayProps.periods[0].name + ': ')
-                    var summary = document.createTextNode(dayProps.periods[0].detailedForecast);
+                    const middleColumn = document.createElement("div");
+                    middleColumn.style.width='100%'
+                    const p1 = document.createElement("p");
+                    const bold = document.createElement("b");
+                    const prefix = document.createTextNode(dayProps.periods[0].name + ': ')
+                    const summary = document.createTextNode(dayProps.periods[0].detailedForecast);
                     bold.appendChild(prefix)
                     p1.appendChild(bold)
                     p1.appendChild(summary)
@@ -353,7 +336,7 @@
                 fetch_retry(pointsJson.properties.forecastGridData, fetchOptions, 5)
                 .then(function(response) {
                     return response.json()})
-                .then(function(gridJson) { 
+                .then(function(gridJson) {
                     if (gridJson == null || gridJson.length == 0 || gridJson.properties == undefined) {
                         printError('Error: Weather at this location is not available from Weather.gov.')
                     }
@@ -362,59 +345,57 @@
                         return gridJson
                     }
                 })
-                .then(function(gridJson) {                        
+                .then(function(gridJson) {
                     gridProps = gridJson.properties
                     timeLength = gridProps.temperature.values.length
-                    
+
                     //  Match min temperature to max temperature
-                    var minDate0 = gridProps.minTemperature.values[0].validTime.split('T')[0]
-                    var maxDate0 = gridProps.maxTemperature.values[0].validTime.split('T')[0]
+                    const minDate0 = gridProps.minTemperature.values[0].validTime.split('T')[0]
+                    const maxDate0 = gridProps.maxTemperature.values[0].validTime.split('T')[0]
                     if (minDate0 != maxDate0) {
                         if (minDate0 < maxDate0)
                             gridProps.minTemperature.values = gridProps.minTemperature.values.slice(1)
                         else
                             gridProps.maxTemperature.values = gridProps.maxTemperature.values.slice(1)
                     }
-                    var minDateEnd = gridProps.minTemperature.values.slice(-1)[0].validTime.split('T')[0]
-                    var maxDateEnd = gridProps.maxTemperature.values.slice(-1)[0].validTime.split('T')[0]
+                    const minDateEnd = gridProps.minTemperature.values.slice(-1)[0].validTime.split('T')[0]
+                    const maxDateEnd = gridProps.maxTemperature.values.slice(-1)[0].validTime.split('T')[0]
                     if (minDateEnd != maxDateEnd) {
                         if (minDateEnd > maxDateEnd)
                             gridProps.minTemperature.values = gridProps.minTemperature.values.slice(0,-1)
                         else
                             gridProps.maxTemperature.values = gridProps.maxTemperature.values.slice(0,-1)
                     }
-                    
-                    numBars = gridProps.minTemperature.values.length
-                    
+
+                    const numBars = gridProps.minTemperature.values.length
+
                     //  Convert celcius to farenheit
                     if (gridProps.minTemperature.uom.includes('degC')) {
-                        for (var i = 0; i < numBars; i++) {
+                        for (let i = 0; i < numBars; i++) {
                             gridProps.minTemperature.values[i].value = c2f(gridProps.minTemperature.values[i].value)
                             gridProps.maxTemperature.values[i].value = c2f(gridProps.maxTemperature.values[i].value)
                         }
                         gridProps.minTemperature.uom = 'degF'
                         gridProps.maxTemperature.uom = 'degF'
                     }
-                    
+
                     //   Find common min and max for all bar charts
-                    var minT = gridProps.minTemperature.values[0].value
-                    var maxT = gridProps.maxTemperature.values[0].value
-                    for (var i = 1; i < numBars; i++) {
+                    let minT = gridProps.minTemperature.values[0].value
+                    let maxT = gridProps.maxTemperature.values[0].value
+                    for (let i = 1; i < numBars; i++) {
                         if (gridProps.minTemperature.values[i].value < minT)
                             minT = gridProps.minTemperature.values[i].value
                         if (gridProps.maxTemperature.values[i].value > maxT)
                             maxT = gridProps.maxTemperature.values[i].value
                     }
-                    
+
                     //  Generate data arrays
-//                     fields = ['temperature','probabilityOfPrecipitation', 'quantitativePrecipitation', 'dewpoint','relativeHumidity']
-//                     dataStruct = generateDataOnDate(gridProps, fields, new Date())
-                    validDay = []
-                    for (var i = 0; i < numBars; i++) {
-                        
+                    const validDay = Array(numBars)
+                    for (let i = 0; i < numBars; i++) {
+
                         validDay[i] = gridProps.minTemperature.values[i].validTime.split('T')[0]
-                        
-                        var div = document.createElement('button');
+
+                        const div = document.createElement('button');
                         div.style.outline = 'none'
                         div.style.cursor = 'Pointer'
                         div.style.border='none'
@@ -422,46 +403,32 @@
                         div.style.display = "flex";
                         div.style['margin'] = '0px'
                         div.style['padding'] = '0px'
-                        let buttonElem = document.getElementById("days").appendChild(div)
+                        const buttonElem = document.getElementById("days").appendChild(div)
                         buttonElem.classList.add('collapsible')
-                        
+
                         buttonElem.onclick =  function(i) {
                             return function() {
-                            this.classList.toggle("active");                            
-                            var content = this.nextElementSibling
+                            this.classList.toggle("active");
+                            const content = this.nextElementSibling
                             if (content.style.maxHeight){
                                 content.style.maxHeight = null;
                             } else {
                                 if (!content.classList.contains('generated')) {
                                     content.classList.add("generated")
-                                    
-                                    fields = ['temperature', 'apparentTemperature', 'probabilityOfPrecipitation']
-                                    var localMidnight = new Date(validDay[i])
-                                    localMidnight.setMinutes(localMidnight.getMinutes() + localMidnight.getTimezoneOffset())
-                                    
-                                    //  Loop over day data and find entries on this date
-//                                     for (let j = 0; j < dayProps.periods.length; j++) {
-//                                         if (validDay[i] == dayProps.periods[j].startTime.split('T')[0]) {
-//                                             const text = (dayProps.periods[j].isDaytime ? 'Day: ' : 'Night: ') + dayProps.periods[j].detailedForecast
-//                                             const descrip = document.createTextNode(text)
-//                                             var div = document.createElement('p')
-//                                             div.style['text-align'] = 'left'
-//                                             div.style['font-size'] = '20px'
-//                                             div.appendChild(descrip)
-//                                             content.appendChild(div)
-//                                         }
-//                                     }
-                                    
-                                    var tempData = generateDataOnDate(gridProps, fields, localMidnight, 25)
-                                    var xmin = localMidnight
-                                    var xmax = new Date(xmin)
-                                    xmax.setHours(xmax.getHours() + 24)
-                                    var div = document.createElement('div')
-                                    div.style.width = "90%"
-                                    div.style.display = "inline-block"
-                                    let elem = content.appendChild(div)
 
-                                    var layout = {
+                                    const fields = ['temperature', 'apparentTemperature', 'probabilityOfPrecipitation']
+                                    const localMidnight = new Date(validDay[i])
+                                    localMidnight.setMinutes(localMidnight.getMinutes() + localMidnight.getTimezoneOffset())
+                                    const tempData = generateDataOnDate(gridProps, fields, localMidnight, 25)
+                                    const xmin = localMidnight
+                                    const xmax = new Date(xmin)
+                                    xmax.setHours(xmax.getHours() + 24)
+                                    const div2 = document.createElement('div')
+                                    div2.style.width = "90%"
+                                    div2.style.display = "inline-block"
+                                    const elem = content.appendChild(div2)
+
+                                    const layout2 = {
                                         height: 200,
                                         paper_bgcolor:'rgba(0,0,0,0)',
                                         plot_bgcolor:'rgba(0,0,0,0)',
@@ -488,12 +455,13 @@
                                         margin: {b:30, t:40,l:30,r:30},
                                     }
 
-                                    var config = {
+                                    const config2 = {
                                         responsive: true,
                                         displayModeBar: false,
                                     }
-                                    var traces = []
-                                    traces[1] = {
+
+                                    const traces2 = Array(2)
+                                    traces2[1] = {
                                         x: tempData['temperature'].time,
                                         y: tempData['temperature'].data,
                                         mode:'lines',
@@ -504,7 +472,7 @@
                                         },
                                         name: 'Actual',
                                     }
-                                    traces[0] = {
+                                    traces2[0] = {
                                         x: tempData['apparentTemperature'].time,
                                         y: tempData['apparentTemperature'].data,
                                         mode:'lines',
@@ -515,14 +483,14 @@
                                         },
                                         name: 'Feels Like',
                                     }
-                                    Plotly.newPlot(elem, traces, layout, config)
-                                    
-                                    var div = document.createElement('div')
-                                    div.style.width = "90%"
-                                    div.style.display = "inline-block"
-                                    elem = content.appendChild(div)
-                                    
-                                    var layout = {
+                                    Plotly.newPlot(elem, traces2, layout2, config2)
+
+                                    const div3 = document.createElement('div')
+                                    div3.style.width = "90%"
+                                    div3.style.display = "inline-block"
+                                    const elem2 = content.appendChild(div3)
+
+                                    const layout3 = {
                                         height: 200,
                                         paper_bgcolor:'rgba(0,0,0,0)',
                                         plot_bgcolor:'rgba(0,0,0,0)',
@@ -543,9 +511,8 @@
                                         showlegend: false,
                                         margin: {b:30, t:40,l:30,r:30},
                                     }
-                                    
-                                    traces = []
-                                    traces[0] = {
+
+                                    const traces3 = [{
                                         x: tempData['probabilityOfPrecipitation'].time,
                                         y: tempData['probabilityOfPrecipitation'].data,
                                         mode:'lines',
@@ -554,13 +521,13 @@
                                             color: '#444',
                                             width: 3,
                                         },
-                                    }
-                                    Plotly.newPlot(elem, traces, layout, config)
+                                    }]
+                                    Plotly.newPlot(elem2, traces3, layout3, config2)
                                 }
                                 content.style.maxHeight = content.scrollHeight + "px";
                             }
                         }}(i)
-                        
+
                         //  D3 bar
                         const svgBarBoxH = 40
                         const svgBarH = 20
@@ -572,8 +539,8 @@
                         const plusPadding = 14
                         const xRange = [svgBarTextWidth + svgBarLabelPadding, buttonElem.clientWidth - svgBarLabelPadding - plusPadding]
                         const barXScale = d3.scaleLinear().range(xRange).domain(xExtent)
-                        dateFormatter = d3.timeFormat('%a')
-                        dateParser = d3.timeParse('%Y-%m-%d')
+                        const dateFormatter = d3.timeFormat('%a')
+                        const dateParser = d3.timeParse('%Y-%m-%d')
                         const svgBar = d3.select(buttonElem)
                             .append('svg')
                             .attr("width", '100%')
@@ -582,7 +549,7 @@
                             .attr('x', svgBarTextWidth)
                             .attr('y', 0.5 * svgBarBoxH)
                             .attr('dominant-baseline', 'middle')
-                            .attr('text-anchor', 'end')  
+                            .attr('text-anchor', 'end')
                             .style('font-weight', 'bold')
                             .text(((new Date(validDay[i])).getUTCDate() == new Date().getDate()) ? 'Today' : dateFormatter(dateParser(validDay[i])))
                         const xScaleMin = barXScale(gridProps.minTemperature.values[i].value)
@@ -596,13 +563,13 @@
                         svgBar.append('text')
                             .attr('x', xScaleMin - svgBarDegreeLabelPadding)
                             .attr('y', 0.5 * svgBarBoxH)
-                            .attr('text-anchor', 'end')  
+                            .attr('text-anchor', 'end')
                             .attr('dominant-baseline', 'middle')
                             .text(Math.round(gridProps.minTemperature.values[i].value).toString() + degreeSymbol)
                         svgBar.append('text')
                             .attr('x', xScaleMax + svgBarDegreeLabelPadding)
                             .attr('y', 0.5 * svgBarBoxH)
-                            .attr('text-anchor', 'start')  
+                            .attr('text-anchor', 'start')
                             .attr('dominant-baseline', 'middle')
                             .text(Math.round(gridProps.maxTemperature.values[i].value).toString() + degreeSymbol)
                         svgBar.append('circle')
@@ -615,29 +582,26 @@
                             .attr('cy', 0.5 * svgBarBoxH)
                             .attr('r', 0.5 * svgBarH)
                             .attr('fill', '#737373')
-                            
+
                         // create content of collapsible
-                        var content = document.createElement('h1')
+                        const content = document.createElement('h1')
                         content.classList.add('content')
                         content.style.width = '100%'
 
                         document.getElementById("days").appendChild(content)
-                        
-                        
                     }
                 })
             })
         }
-        
+
         //  Prints specified error
         function printError(message) {
-            var node = document.createTextNode(message)
-            document.getElementById("errors").appendChild(node)
+            document.getElementById("errors").appendChild(document.createTextNode(message))
         }
-        
+
         // Get coordinate of location
         function geocode() {
-            url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json&limit=1'
+            const url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json&limit=1'
             fetch_retry(url, {method:'GET'}, 5)
             .then(function(response) { return response.json(); })
             .then(function(nomJson) {
@@ -645,27 +609,17 @@
                     printError('Error: Location not identifiable from \"' + loc.value + '\".  Try again.')
                 }
                 else {
-                    var lat = nomJson[0].lat
-                    var lon = nomJson[0].lon
+                    const lat = nomJson[0].lat
+                    const lon = nomJson[0].lon
                     console.log('Geocode success: ' + loc.value + ' -> (' + lat + ', ' + lon + ')' )
                     getWeather(lat,lon)
-                    
+
                 }
             })
         }
-        
-        function getCurrentValue(array) {
-            var now = new Date()
-            var iTime = 0
-            for (i = 0; i < array.length; i++) {
-                iTime = new Date(array[i].validTime.split('/')[0])
-                if (iTime > now)
-                    return array[i-1].value
-            }
-        }
-        
+
         function reverseGeocode(lat,lon) {
-            url = 'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&zoom=14'
+            const url = 'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&zoom=14'
             fetch_retry(url, {method:'GET'}, 5)
             .then(function(response) { return response.json(); })
             .then(function(reverseJson) {
@@ -678,8 +632,8 @@
                 }
             })
         }
-        
-        var showhelp = true
+
+        let showhelp = true
         function help() {
             clearID('errors')
             if (showhelp == true) {
@@ -689,11 +643,11 @@
             else
                 showhelp = true
         }
-        
+
         function eucDist(coord1,coord2) {
             return Math.sqrt(Math.pow(coord1[0] - coord2[0], 2) + Math.pow(coord1[1] - coord2[1], 2))
         }
-        
+
         geocode()
     </script>
   </body>
