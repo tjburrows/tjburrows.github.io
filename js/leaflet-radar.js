@@ -43,17 +43,14 @@ L.Control.Radar = L.Control.extend({
         );
 
         this.checkbox = document.createElement(`button`);
-        this.checkbox.innerHTML = '<i class="fa fa-play" aria-hidden="true"></i>'
+        this.checkbox.classList.add('fa')
+        this.checkbox.classList.add('fa-play')
+        this.checkbox.classList.add('fa-border')
+        this.checkbox.style['font-size']='20px'
         this.checkbox.id = `leaflet-radar-toggle`;
         this.checkbox.onclick = () => this.toggle();
 
         checkbox_div.appendChild(this.checkbox);
-
-//         let checkbox_label = document.createElement(`span`);
-//         checkbox_label.innerText = `Radar`;
-// 
-//         checkbox_div.appendChild(checkbox_label);
-
         let slider_div = L.DomUtil.create(
             `div`,
             `leaflet-radar-slider`,
@@ -98,11 +95,16 @@ L.Control.Radar = L.Control.extend({
     toggle: function () {
         this.checkbox.checked = this.checkbox.checked ? false : true
         if (!this.checkbox.checked) {
-            this.checkbox.innerHTML = '<i class="fa fa-play" aria-hidden="true"></i>'
+            this.checkbox.classList.remove('fa-pause')
+            this.checkbox.classList.add('fa-play')
+            
+//             this.checkbox.innerHTML = '<i class="fa fa-play fa-border" aria-hidden="true"></i>'
             this.isPaused = true;
         }
         else {
-            this.checkbox.innerHTML = '<i class="fa fa-pause" aria-hidden="true"></i>'
+            this.checkbox.classList.remove('fa-play')
+            this.checkbox.classList.add('fa-pause')
+//             this.checkbox.innerHTML = '<i class="fa fa-pause fa-border" aria-hidden="true"></i>'
             
             const tempLayers = this.generateLayers();
             this.removeLayers();

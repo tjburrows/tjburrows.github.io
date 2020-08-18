@@ -69,7 +69,7 @@
 
   <body style='text-align:center'>
     <div id="search" style='margin-top:20px;display:flex;height:32px;align-items:center;justify-content:center;max-width:500px;margin:0 auto; margin-bottom:20px'>
-        <button id='button0' title='Magic' onclick="getRandomLocation()" class="fa fa-magic fa-border" style="cursor:pointer;height:100%;"></button>
+        <button id='button0' title='Magic' onclick="getRandomLocation()" class="fa fa-magic fa-border" style="cursor:pointer;height:100%;margin:0"></button>
         <button id='button1' title='Your Location' onclick="getCurrentLocation()" class="fa fa-location-arrow fa-border" style="cursor:pointer;height:100%;"></button>
         <input id='textinput' type="text" style='height:100%;width:90%;' value='Somerville, MA'>
         <button id='button2' title='Search' onclick="geocode()" class="fa fa-search fa-border" style="cursor:pointer;height:100%;"></button>
@@ -243,7 +243,7 @@
             //  Create map
             if (!mapDrawn) {
                 mapDrawn = true
-                map = L.map("map1",{doubleClickZoom:false, scrollWheelZoom:false, dragging:!L.Browser.mobile}).setView([lat,lon], 6);
+                map = L.map("map1",{doubleClickZoom:false, scrollWheelZoom:false, dragging:!L.Browser.mobile}).setView([lat,lon], 5);
                 osmAttribution ='Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
                 leafletRadarAttribution ='<a href="https://github.com/rwev/leaflet-radar">Radar</a>';
                 L.tileLayer(
