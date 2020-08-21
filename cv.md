@@ -8,7 +8,7 @@ Download [PDF version](../cv_pdf)
 
 ## Education
 
-**PhD, Mechanical Engineering, Aug 2020 (Expected)**  <br>
+**PhD, Mechanical Engineering, Aug 2020**  <br>
 Georgia Institute of Technology, GPA 3.92
 
 **MS, Mechanical Engineering, Dec 2018**  <br>
