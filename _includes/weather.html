@@ -335,7 +335,7 @@
                     p1.appendChild(summary)
                     middleColumn.appendChild(p1)
                     nowDiv.appendChild(middleColumn)
-                    document.getElementById('summary').appendChild
+                    document.getElementById('summary').appendChild(nowDiv)
                     return dayProps.periods
                 })
                 .then(function(dayPeriods) {
@@ -401,7 +401,6 @@
                         for (let i = 0; i < numBars; i++) {
 
                             validDay[i] = gridProps.minTemperature.values[i].validTime.split('T')[0]
-                            console.log(validDay[i])
                             
                             // find corresponding day.  If Daytime icon available, choose it.  else choose nighttime.
                             for (let d = 0; d < dayPeriods.length; d++) {
