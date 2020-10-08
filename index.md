@@ -4,7 +4,7 @@ title: About
 permalink: /
 ---
 
-{% include image.html url="images/photo.jpg" caption="Jan 2018" max_width="300px" align="right" %}
+{% include image.html url="images/photo.jpg" caption="Oct 2020" max_width="300px" align="right" %}
 
 I recently earned my PhD in Mechanical Engineering at Georgia Institute of Technology under [Dr. Ari Glezer](http://fmrl.gatech.edu). My research was in experimental fluid mechanics.  More specifically, I studied the effect of active flow control on the flow separation and resulting streamwise vortices in offset diffusers and its effects on aircraft engine performance.
 
