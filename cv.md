@@ -21,7 +21,7 @@ North Carolina State University, GPA 3.63
 **Programming** <br>
 C, C++, MATLAB, Python, Javascript, GPU, MPI, OpenMP, Pandas
 
-![Project Euler badge](https://projecteuler.net/profile/tjburrows.png)
+[![Project Euler badge](https://projecteuler.net/profile/tjburrows.png)](https://projecteuler.net/)
 
 **Software** <br>
 LabView, Siemens NX, LaVision Davis, Tecplot, Linux
