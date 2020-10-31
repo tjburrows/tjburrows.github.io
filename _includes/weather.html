@@ -151,7 +151,6 @@
             return (meters * 100) / (12 * 2.54)
         }
 
-
         const dayFind = /(\d+)D/
         const hourFind = /(\d+)H/
         function parseDuration(string) {
@@ -402,7 +401,7 @@
 
                             validDay[i] = gridProps.minTemperature.values[i].validTime.split('T')[0]
                             
-                            // find corresponding day.  If Daytime icon available, choose it.  else choose nighttime.
+                            // find corresponding day.  If Daytime available, choose it.  else choose nighttime.
                             for (let d = 0; d < dayPeriods.length; d++) {
                                 if (dayPeriods[d].startTime.split('T')[0] == validDay[i]) {
                                     if (dayPeriods[d].isDaytime) {
@@ -438,18 +437,29 @@
                                     if (!content.classList.contains('generated')) {
                                         content.classList.add("generated")
 
-                                        const fields = ['temperature', 'apparentTemperature', 'probabilityOfPrecipitation']
+                                        const fields = ['temperature', 'apparentTemperature', 'probabilityOfPrecipitation', 'quantitativePrecipitation']
                                         const localMidnight = new Date(validDay[i])
                                         localMidnight.setMinutes(localMidnight.getMinutes() + localMidnight.getTimezoneOffset())
                                         const tempData = generateDataOnDate(gridProps, fields, localMidnight, 25)
                                         const xmin = localMidnight
                                         const xmax = new Date(xmin)
                                         xmax.setHours(xmax.getHours() + 24)
+                                        
+                                        //  add day description (not working yet)
+//                                         const div1 = document.createElement('div')
+//                                         const text = document.createTextNode(currentDay.detailedForecast)
+//                                         div1.appendChild(text)
+//                                         div1.style.width = "90%"
+//                                         div1.style.display = "inline-block"
+//                                         content.appendChild(div1)
+                                        
+                                        //  Elem = div for temperature plot
                                         const div2 = document.createElement('div')
                                         div2.style.width = "90%"
                                         div2.style.display = "inline-block"
                                         const elem = content.appendChild(div2)
 
+                                        //  Temperature line plot
                                         const layout2 = {
                                             height: 200,
                                             paper_bgcolor:'rgba(0,0,0,0)',
@@ -507,16 +517,27 @@
                                         }
                                         Plotly.newPlot(elem, traces2, layout2, config2)
 
+                                        
+                                        //  Elem2 = div for precipitation plot
                                         const div3 = document.createElement('div')
                                         div3.style.width = "90%"
                                         div3.style.display = "inline-block"
                                         const elem2 = content.appendChild(div3)
 
+                                        //  Precipitation plot
+                                        //  Determine whether to show inches bar chart
+                                        //  Sum over all quantitative precipitation
+                                        let precipSum = 0
+                                        tempData['quantitativePrecipitation'].data.forEach(function (value, index) {
+                                            precipSum += value
+                                        })
+                                        const plotQPrec = (precipSum > 0)
+                                        
                                         const layout3 = {
                                             height: 200,
                                             paper_bgcolor:'rgba(0,0,0,0)',
                                             plot_bgcolor:'rgba(0,0,0,0)',
-                                            title: 'Precipitation Chance (%)',
+                                            title: 'Precipitation',
                                             xaxis: {
                                                 type:'date',
                                                 tickformat: '%-I %p',
@@ -529,21 +550,55 @@
                                                 range: [0,101],
                                                 showgrid:true,
                                                 gridcolor:'rgba(0,0,0,0.25)',
+                                                title: '% Chance',                                            
                                             },
+                                            
                                             showlegend: false,
-                                            margin: {b:30, t:40,l:30,r:30},
+                                            margin: {b:30, t:40,l:40,r:50},
                                         }
 
-                                        const traces3 = [{
+                                        let traces3 = [{
                                             x: tempData['probabilityOfPrecipitation'].time,
                                             y: tempData['probabilityOfPrecipitation'].data,
-                                            mode:'lines',
-                                            type:'scatter',
+                                            mode: 'lines',
+                                            type: 'scatter',
                                             line: {
                                                 color: '#444',
                                                 width: 3,
                                             },
+                                            name: '% Chance',
+                                            yaxis: 'y1',
                                         }]
+                                        
+                                        if (plotQPrec) {
+                                            maxInch = Math.max(...tempData['quantitativePrecipitation'].data)
+                                            traces3 = [{
+                                            x: tempData['quantitativePrecipitation'].time,
+                                            y: tempData['quantitativePrecipitation'].data,
+                                            type: 'bar',
+                                            yaxis: 'y2',
+                                            name: 'Inches',
+                                            marker: {color: '#1F77B4', opacity: 0.6},
+                                            }, traces3[0]]
+                                            
+                                            layout3.yaxis2 = {
+                                                title: 'Inches',
+                                                titlefont: {color: '#1F77B4'},
+                                                tickfont: {color: '#1F77B4'},
+                                                overlaying: 'y',
+                                                side: 'right',
+                                                fixedrange: true,
+
+                                            }
+                                            
+                                            const minInchRange = 0.2
+                                            if (maxInch < minInchRange) {
+                                                layout3.yaxis2.range = [0,minInchRange]
+                                            }
+                                            
+                                            layout3.yaxis.showgrid = false
+                                            layout3.yaxis2.overlaying = 'y1'
+                                        }
                                         Plotly.newPlot(elem2, traces3, layout3, config2)
                                     }
                                     content.style.maxHeight = content.scrollHeight + "px";
