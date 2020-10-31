@@ -555,9 +555,8 @@
                             const iconSpace = 10
                             const svgBarBoxH = 50
                             const svgBarH = 20
-                            const svgBarPaddingW = 10
                             const svgBarTextWidth = 50
-                            const svgBarLabelPadding = 40
+                            const svgBarLabelPadding = 45
                             const svgBarDegreeLabelPadding = 4
                             const xExtent = [minT, maxT]
                             const plusPadding = 14
@@ -586,34 +585,42 @@
                                 .text(((new Date(validDay[i])).getUTCDate() == new Date().getDate()) ? 'Today' : dateFormatter(dateParser(validDay[i])))
                             const xScaleMin = barXScale(gridProps.minTemperature.values[i].value)
                             const xScaleMax = barXScale(gridProps.maxTemperature.values[i].value)
+                            
+                            //  Create rectangle
                             svgBar.append('rect')
-                                .attr('x', xScaleMin + 0.5 * svgBarH)
+                                .attr('x', xScaleMin)
                                 .attr('y', 0.5 * (svgBarBoxH - svgBarH))
-                                .attr('width', xScaleMax - xScaleMin - svgBarH)
+                                .attr('width', xScaleMax - xScaleMin)
                                 .attr('height', svgBarH)
                                 .attr('fill', '#737373')
+                                
+                            //  Append semi-circle on each side
+                            const circleR = 0.5 * svgBarH
+                            svgBar.append('circle')
+                                .attr('cx', xScaleMin)
+                                .attr('cy', 0.5 * svgBarBoxH)
+                                .attr('r', circleR)
+                                .attr('fill', '#737373')
+                            svgBar.append('circle')
+                                .attr('cx', xScaleMax)
+                                .attr('cy', 0.5 * svgBarBoxH)
+                                .attr('r', circleR)
+                                .attr('fill', '#737373')
+                                
+                            //  Text on each side
                             svgBar.append('text')
-                                .attr('x', xScaleMin - svgBarDegreeLabelPadding)
+                                .attr('x', xScaleMin - svgBarDegreeLabelPadding - circleR)
                                 .attr('y', 0.5 * svgBarBoxH)
                                 .attr('text-anchor', 'end')
                                 .attr('dominant-baseline', 'middle')
                                 .text(Math.round(gridProps.minTemperature.values[i].value).toString() + degreeSymbol)
                             svgBar.append('text')
-                                .attr('x', xScaleMax + svgBarDegreeLabelPadding)
+                                .attr('x', xScaleMax + svgBarDegreeLabelPadding + circleR)
                                 .attr('y', 0.5 * svgBarBoxH)
                                 .attr('text-anchor', 'start')
                                 .attr('dominant-baseline', 'middle')
                                 .text(Math.round(gridProps.maxTemperature.values[i].value).toString() + degreeSymbol)
-                            svgBar.append('circle')
-                                .attr('cx', xScaleMin + 0.5 * svgBarH)
-                                .attr('cy', 0.5 * svgBarBoxH)
-                                .attr('r', 0.5 * svgBarH)
-                                .attr('fill', '#737373')
-                            svgBar.append('circle')
-                                .attr('cx', xScaleMax - 0.5 * svgBarH)
-                                .attr('cy', 0.5 * svgBarBoxH)
-                                .attr('r', 0.5 * svgBarH)
-                                .attr('fill', '#737373')
+                            
 
                             // create content of collapsible
                             const content = document.createElement('div')
