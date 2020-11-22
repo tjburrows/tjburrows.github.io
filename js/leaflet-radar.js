@@ -5,6 +5,7 @@ L.Control.Radar = L.Control.extend({
 
     NEXRAD_URL: `https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q.cgi`,
     NEXRAD_LAYER: `nexrad-n0q-900913`,
+    NEXRAD_TMS_URL: 'https://mesonet.agron.iastate.edu/cache/tile.py/1.0.0/nexrad-n0q-900913',
 
     isPaused: false,
     timeLayerIndex: 0,
@@ -124,7 +125,9 @@ L.Control.Radar = L.Control.extend({
                 this.showLayerByIndex(this.timeLayerIndex);
 
                 this.isPaused = true;
-                this.checkbox.innerHTML = '<i class="fa fa-play" aria-hidden="true"></i>'
+                this.checkbox.classList.remove('fa-pause')
+                this.checkbox.classList.add('fa-play')
+                this.checkbox.checked = false
             };
             if (this.timeLayerIndex != 0)
                 this.timeLayerIndex--
@@ -192,11 +195,11 @@ L.Control.Radar = L.Control.extend({
         function suffix(time) {  
             switch(time) {
                 case 0:
-                    return '';
+                    return '-conus';
                 case 5:
-                    return '-m05m';
+                    return '-m05m-conus';
                 default:
-                    return '-m' + time + 'm';
+                    return '-m' + time + 'm-conus';
             }
         }
         
@@ -215,6 +218,7 @@ L.Control.Radar = L.Control.extend({
                 opacity: this.options.opacity,
                 zIndex: this.options.zIndex,
             });
+//             const layer = L.tileLayer(this.NEXRAD_TMS_URL + suffix(i) + '/{z}/{x}/{y}.png', tms=true)
 
             const iTime = new Date(currentTime.valueOf() - i * 60 * 1000)
             
