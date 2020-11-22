@@ -458,6 +458,12 @@
                                         div2.style.width = "90%"
                                         div2.style.display = "inline-block"
                                         const elem = content.appendChild(div2)
+                                        
+                                        // Determine if apparent temp is different from actual
+                                        let tdiff = 0
+                                        for (let i = 0; i < tempData['temperature'].data.length; i++)
+                                            tdiff += Math.abs(tempData['temperature'].data[i]-tempData['apparentTemperature'].data[i])
+                                        let plotApparent = (tdiff > 0)
 
                                         //  Temperature line plot
                                         const layout2 = {
@@ -474,7 +480,7 @@
                                             },
                                             yaxis: {
                                                 fixedrange: true,
-                                                showgrid:true,
+                                                showgrid: false,
                                                 gridcolor:'rgba(0,0,0,0.25)',
                                             },
                                             legend: {
@@ -486,6 +492,9 @@
                                             },
                                             margin: {b:30, t:40,l:30,r:30},
                                         }
+                                        
+                                        if (!plotApparent)
+                                            layout2.showlegend = false
 
                                         const config2 = {
                                             responsive: true,
@@ -515,7 +524,10 @@
                                             },
                                             name: 'Feels Like',
                                         }
-                                        Plotly.newPlot(elem, traces2, layout2, config2)
+                                        if (plotApparent)
+                                            Plotly.newPlot(elem, traces2, layout2, config2)
+                                        else
+                                            Plotly.newPlot(elem, [traces2[1]], layout2, config2)
 
                                         
                                         //  Elem2 = div for precipitation plot
@@ -548,7 +560,7 @@
                                             yaxis: {
                                                 fixedrange: true,
                                                 range: [0,101],
-                                                showgrid:true,
+                                                showgrid:false,
                                                 gridcolor:'rgba(0,0,0,0.25)',
                                                 title: '% Chance',                                            
                                             },
@@ -596,7 +608,6 @@
                                                 layout3.yaxis2.range = [0,minInchRange]
                                             }
                                             
-                                            layout3.yaxis.showgrid = false
                                             layout3.yaxis2.overlaying = 'y1'
                                         }
                                         Plotly.newPlot(elem2, traces3, layout3, config2)
