@@ -354,7 +354,7 @@
                     .then(function(gridJson) {
                         gridProps = gridJson.properties
                         timeLength = gridProps.temperature.values.length
-
+                        
                         //  Match min temperature to max temperature
                         const minDate0 = gridProps.minTemperature.values[0].validTime.split('T')[0]
                         const maxDate0 = gridProps.maxTemperature.values[0].validTime.split('T')[0]
@@ -385,16 +385,7 @@
                             gridProps.maxTemperature.uom = 'degF'
                         }
 
-                        //   Find common min and max for all bar charts
-                        let minT = gridProps.minTemperature.values[0].value
-                        let maxT = gridProps.maxTemperature.values[0].value
-                        for (let i = 1; i < numBars; i++) {
-                            if (gridProps.minTemperature.values[i].value < minT)
-                                minT = gridProps.minTemperature.values[i].value
-                            if (gridProps.maxTemperature.values[i].value > maxT)
-                                maxT = gridProps.maxTemperature.values[i].value
-                        }
-
+                        
                         //  Generate data arrays
                         const validDay = Array(numBars)
                         for (let i = 0; i < numBars; i++) {
@@ -414,6 +405,22 @@
                                     }
                                 }
                             }
+                            
+                            const localMidnight = new Date(validDay[i])
+                            localMidnight.setMinutes(localMidnight.getMinutes() + localMidnight.getTimezoneOffset())
+                            const tempData = generateDataOnDate(gridProps, ['temperature'], localMidnight, 25)['temperature'].data
+                            
+                            // Overwrite min and max based on temperature profiles (hacky)
+                            let minti = tempData[0]
+                            let maxti = tempData[0]
+                            for (let t = 1; t < tempData.length; t++) {
+                                if (tempData[t] > maxti)
+                                    maxti = tempData[t]
+                                if (tempData[t] < minti)
+                                    minti = tempData[t]
+                            }
+                            gridProps.minTemperature.values[i].value = minti
+                            gridProps.maxTemperature.values[i].value = maxti
                             
 
                             const div = document.createElement('button');
@@ -445,7 +452,7 @@
                                         const xmax = new Date(xmin)
                                         xmax.setHours(xmax.getHours() + 24)
                                         
-                                        //  add day description (not working yet)
+                                        //  add day description (work in progress)
 //                                         const div1 = document.createElement('div')
 //                                         const text = document.createTextNode(currentDay.detailedForecast)
 //                                         div1.appendChild(text)
@@ -615,6 +622,16 @@
                                     content.style.maxHeight = content.scrollHeight + "px";
                                 }
                             }}(i)
+                            
+                            //   Find common min and max for all bar charts
+                            let minT = gridProps.minTemperature.values[0].value
+                            let maxT = gridProps.maxTemperature.values[0].value
+                            for (let i = 1; i < numBars; i++) {
+                                if (gridProps.minTemperature.values[i].value < minT)
+                                    minT = gridProps.minTemperature.values[i].value
+                                if (gridProps.maxTemperature.values[i].value > maxT)
+                                    maxT = gridProps.maxTemperature.values[i].value
+                            }
 
                             //  D3 bar
                             const iconSize = 40
