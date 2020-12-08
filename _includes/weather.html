@@ -281,7 +281,7 @@
             return dataStruct
         }
         
-        function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayMidnight, lastMidnight) {
+        function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayMidnight, lastMidnight, firstTime) {
             const todayFields = ['temperature']
             
             var minTemp
@@ -690,8 +690,8 @@
                         
                         const validDay = Array(numBars)
                         let i = 0
+                        let thisIsToday = (i == 0 && !todayIsIdx0) || todayIsIdx0
                         while (i < numBars) {
-                            const thisIsToday = (i == 0 && !todayIsIdx0) || todayIsIdx0
                         
                             const div = document.createElement('button');
                             div.style.outline = 'none'
@@ -723,8 +723,7 @@
                                 content.classList.add('generated')
                                 content.style.width = '100%'
                                 document.getElementById("days").appendChild(content)
-                                todayData = todayPlots(gridProps, todayObservationsJson, stationID,content, todayMidnight, lastMidnight)         
-                                buttonElem.click()
+                                todayData = todayPlots(gridProps, todayObservationsJson, stationID,content, todayMidnight, lastMidnight, firstTime)         
                             }
                             if (!thisIsToday) {
                                 validDay[i] = gridProps.minTemperature.values[i].validTime.split('T')[0]
@@ -1033,8 +1032,12 @@
                                 content.style.width = '100%'
                                 document.getElementById("days").appendChild(content)
                             }
-                           
-                            i += 1
+                            if (i == 0 && thisIsToday && !todayIsIdx0) {
+                                i = 0
+                                thisIsToday = false
+                            }
+                            else
+                                i += 1
                         }
                     })
                     })
