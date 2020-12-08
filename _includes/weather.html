@@ -289,7 +289,6 @@
             var todayIcon
                 
             todayObservationsJson.features = todayObservationsJson.features.slice(1,)
-            todayIcon = todayObservationsJson.features[0].properties.icon
             const lenObs = todayObservationsJson.features.length
             const plotObservations = lenObs  > 0
             let obsData = {'temperature':Array(lenObs),'precipInches':Array(lenObs), 'time':Array(lenObs)}
@@ -297,6 +296,7 @@
             let plotObservedPrecip = false
             let mostRecentObsTimeMinus1hr
             if (plotObservations) {
+                todayIcon = todayObservationsJson.features[0].properties.icon
                 const mostRecentObsTime = new Date(todayObservationsJson.features[0].properties.timestamp)
                 mostRecentObsTimeMinus1hr = new Date(mostRecentObsTime)
                 mostRecentObsTimeMinus1hr.setHours(mostRecentObsTimeMinus1hr.getHours() - 1)
@@ -633,10 +633,10 @@
                     let yesterday1am = new Date(lastMidnight)
                     yesterday1am.setHours(yesterday1am.getHours()-1)
                     yesterday1am.setMinutes(yesterday1am.getMinutes() - yesterday1am.getTimezoneOffset())
-                        fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations?start=' + encodeURIComponent(yesterday1am.toISOString().slice(0,-5) + '+00:00'), fetchOptions, 5)
-                        .then(function(response) {return response.json()})
-                        .then(function(todayObservationsJson) {
-                        console.log("todays observations:", todayObservationsJson)
+                    fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations?start=' + encodeURIComponent(yesterday1am.toISOString().slice(0,-5) + '+00:00'), fetchOptions, 5)
+                    .then(function(response) {return response.json()})
+                    .then(function(todayObservationsJson) {
+                    console.log("todays observations:", todayObservationsJson)
                         
                         
                         
