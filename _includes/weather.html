@@ -690,9 +690,9 @@
                         
                         const validDay = Array(numBars)
                         let i = 0
-                        let thisIsToday = (i == 0 && !todayIsIdx0) || todayIsIdx0
+                        var thisIsToday = (i == 0 && !todayIsIdx0) || todayIsIdx0
                         while (i < numBars) {
-                        
+                            console.log(i, thisIsToday)
                             const div = document.createElement('button');
                             div.style.outline = 'none'
                             div.style.cursor = 'Pointer'
@@ -723,7 +723,23 @@
                                 content.classList.add('generated')
                                 content.style.width = '100%'
                                 document.getElementById("days").appendChild(content)
-                                todayData = todayPlots(gridProps, todayObservationsJson, stationID,content, todayMidnight, lastMidnight, firstTime)         
+                                todayData = todayPlots(gridProps, todayObservationsJson, stationID,content, todayMidnight, lastMidnight, firstTime)     
+                                if (todayIsIdx0) {
+                                    // find corresponding day.  If Daytime available, choose it.  else choose nighttime.
+                                    for (let d = 0; d < dayPeriods.length; d++) {
+                                        if (dayPeriods[d].startTime.split('T')[0] == gridProps.minTemperature.values[0].validTime.split('T')[0]) {
+                                            if (dayPeriods[d].isDaytime) {
+                                                currentDay = dayPeriods[d]
+                                                break
+                                            }
+                                            else {
+                                                currentDay = dayPeriods[d]
+                                                break
+                                            }
+                                        }
+                                    }
+                                    todayData.icon = currentDay.icon
+                                }
                             }
                             if (!thisIsToday) {
                                 validDay[i] = gridProps.minTemperature.values[i].validTime.split('T')[0]
@@ -967,7 +983,7 @@
                             const dateFormatter = d3.timeFormat('%a')
                             const dateParser = d3.timeParse('%Y-%m-%d')
                             const weatherIcon = document.createElement("img")
-                            weatherIcon.src = thisIsToday ? todayData.icon : currentDay.icon
+                            weatherIcon.src = todayIsIdx0 ? currentDay.icon : thisIsToday ? todayData.icon : currentDay.icon
                             if (!thisIsToday) {
                                 weatherIcon.alt = currentDay.shortForecast
                                 weatherIcon.title = currentDay.shortForecast
@@ -1024,7 +1040,6 @@
                                 .attr('dominant-baseline', 'middle')
                                 .text(Math.round(thisIsToday ? todayData.maxTemp : gridProps.maxTemperature.values[i].value).toString() + degreeSymbol)
                             
-
                             // create content of collapsible
                             if (!thisIsToday) {
                                 const content = document.createElement('div')
@@ -1032,12 +1047,12 @@
                                 content.style.width = '100%'
                                 document.getElementById("days").appendChild(content)
                             }
-                            if (i == 0 && thisIsToday && !todayIsIdx0) {
-                                i = 0
-                                thisIsToday = false
+                            if (thisIsToday && !todayIsIdx0) {
+                                i -= 1
                             }
-                            else
-                                i += 1
+                            i += 1
+                            if (thisIsToday)
+                                thisIsToday = false
                         }
                     })
                     })
