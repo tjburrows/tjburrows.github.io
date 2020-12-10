@@ -14,186 +14,6 @@ loc.addEventListener("keyup", function(event) {
     }
 })
 
-//  Get current location and run weather
-function getCurrentLocation() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            getWeather(position.coords.latitude, position.coords.longitude, true)
-        });
-    }
-}
-
-function getRandomLocation() {
-    const randCoords = randUSA()
-    getWeather(randCoords[0], randCoords[1], true)
-}
-
-//  Clear all child divs of an id
-function clearID(id) {
-    const node = document.getElementById(id)
-    if (node !== null) {
-        while (node.hasChildNodes()) {
-            node.removeChild(node.lastChild);
-        }
-    }
-}
-
-function fetch_retry(url, options = {}, retries = 3) {
-    const retryCodes = [408, 500, 502, 503, 504, 522, 524]
-    return fetch(url, options)
-    .then(res => {
-        if (res.ok)
-            return res
-        if (retries > 0 && retryCodes.includes(res.status)) {
-            return fetch_retry(url, options, retries - 1)
-        } else {
-            throw new Error(res)
-        }
-    })
-    .catch(console.error)
-}
-
-//  Convert Celcius to Fahrenheit
-function c2f(celcius) {
-    return celcius * 9.0 / 5.0 + 32.0
-}
-
-//  Convert meters to feet
-function m2ft(meters) {
-    return (meters * 100) / (12 * 2.54)
-}
-
-//  Convert meters to inches
-function m2in(meters) {
-    return (meters * 100) / (2.54)
-}
-
-const dayFind = /(\d+)D/
-const hourFind = /(\d+)H/
-function parseDuration(string) {
-    let hourOffset = 0
-    if (string.includes('D'))
-        hourOffset += parseInt(string.match(dayFind)[1]) * 24
-    if (string.includes('H'))
-        hourOffset += parseInt(string.match(hourFind)[1])
-    return hourOffset
-}
-
-
-function generateDataOnDate(gridProps, fields, date, offset=24) {
-    dataStruct = {}
-    fields.forEach(function (field, index) {
-        if (field in gridProps) {
-            const numPoints = gridProps[field].values.length
-            const entryStruct = {'time':new Array(), 'data':new Array(), 'unit':''}
-
-            //  Extract parameter unit
-            if ('uom' in gridProps[field])
-                entryStruct.unit = gridProps[field].uom.split(':')[1]
-
-            //  Get date of today, and date in 24 hours
-            const datePlus24h = new Date(date)
-            datePlus24h.setHours(datePlus24h.getHours() + offset)
-
-            //  Create array of data
-            for (let i = 0; i < numPoints; i++) {
-                const iso8601String = gridProps[field].values[i].validTime
-
-                const isoSplit = iso8601String.split('/')
-                const startTime = new Date(isoSplit[0])
-                const duration = parseDuration(isoSplit[1])
-
-                //  Only plot next 24 hours
-                if (startTime < datePlus24h) {
-                    //  Repeat value for specified number of hours
-                    for (let h = 0; h < duration; h++) {
-                        const currentTime = new Date(startTime)
-                        currentTime.setHours(currentTime.getHours() + h)
-                        if (currentTime >= date && currentTime <= datePlus24h) {
-                            entryStruct.time.push(currentTime)
-                            entryStruct.data.push(gridProps[field].values[i].value)
-                        }
-                    }
-                }
-            }
-            if (entryStruct.unit.includes('degC')) {
-                for (let i = 0; i < entryStruct.data.length; i++) {
-                    entryStruct.data[i] = c2f(entryStruct.data[i])
-                }
-                entryStruct.unit = degreeSymbol + 'F'
-            }
-            else if (entryStruct.unit.includes('degF'))
-                entryStruct.unit = degreeSymbol + 'F'
-            if (entryStruct.unit == 'mm') {
-                for (let i = 0; i < entryStruct.data.length; i++) {
-                    entryStruct.data[i] = entryStruct.data[i] / 25.4
-                }
-                entryStruct.unit = 'in'
-            }
-            dataStruct[field] = entryStruct
-        }
-        else {
-            console.log('Error: ' + field + ' not in properties')
-        }
-    })
-    return dataStruct
-}
-
-function generateDataOnDate2(gridProps, fields, startdate, enddate) {
-    dataStruct = {}
-    fields.forEach(function (field, index) {
-        if (field in gridProps) {
-            const numPoints = gridProps[field].values.length
-            const entryStruct = {'time':new Array(), 'data':new Array(), 'unit':''}
-
-            //  Extract parameter unit
-            if ('uom' in gridProps[field])
-                entryStruct.unit = gridProps[field].uom.split(':')[1]
-
-            //  Create array of data
-            for (let i = 0; i < numPoints; i++) {
-                const iso8601String = gridProps[field].values[i].validTime
-
-                const isoSplit = iso8601String.split('/')
-                const startTime = new Date(isoSplit[0])
-                const duration = parseDuration(isoSplit[1])
-
-                //  Only plot next 24 hours
-                if (startTime < enddate) {
-                    //  Repeat value for specified number of hours
-                    for (let h = 0; h < duration; h++) {
-                        const currentTime = new Date(startTime)
-                        currentTime.setHours(currentTime.getHours() + h)
-                        if (currentTime >= startdate && currentTime <= enddate) {
-                            entryStruct.time.push(currentTime)
-                            entryStruct.data.push(gridProps[field].values[i].value)
-                        }
-                    }
-                }
-            }
-            if (entryStruct.unit.includes('degC')) {
-                for (let i = 0; i < entryStruct.data.length; i++) {
-                    entryStruct.data[i] = c2f(entryStruct.data[i])
-                }
-                entryStruct.unit = degreeSymbol + 'F'
-            }
-            else if (entryStruct.unit.includes('degF'))
-                entryStruct.unit = degreeSymbol + 'F'
-            if (entryStruct.unit == 'mm') {
-                for (let i = 0; i < entryStruct.data.length; i++) {
-                    entryStruct.data[i] = entryStruct.data[i] / 25.4
-                }
-                entryStruct.unit = 'in'
-            }
-            dataStruct[field] = entryStruct
-        }
-        else {
-            console.log('Error: ' + field + ' not in properties')
-        }
-    })
-    return dataStruct
-}
-
 function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayMidnight, lastMidnight, firstTime) {
     const todayFields = ['temperature']
     
@@ -214,15 +34,16 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
         mostRecentObsTimeMinus1hr = new Date(mostRecentObsTime)
         mostRecentObsTimeMinus1hr.setHours(mostRecentObsTimeMinus1hr.getHours() - 1)
         for (let i = 0; i < lenObs; i++) {todayObservationsJson
-        
             obsData.temperature[lenObs - 1 - i] = todayObservationsJson.features[i].properties.temperature.value
-            obsData.precipInches[lenObs - 1 - i] = todayObservationsJson.features[i].properties.precipitationLastHour.value
-            if (!obsData.precipInches[lenObs - 1 - i])
-                obsData.precipInches[lenObs - 1 - i] = 0
+            if ('precipitationLastHour' in todayObservationsJson.features[i].properties) {
+                obsData.precipInches[lenObs - 1 - i] = todayObservationsJson.features[i].properties.precipitationLastHour.value
+                if (todayObservationsJson.features[i].properties.precipitationLastHour.unitCode.includes(':m'))
+                    obsData.precipInches[lenObs - 1 - i] = m2in(obsData.precipInches[lenObs - 1 - i])
+            }
+                
             if (todayObservationsJson.features[i].properties.temperature.unitCode.includes('degC'))
                 obsData.temperature[lenObs - 1 - i] = c2f(obsData.temperature[lenObs - 1 - i])
-            if (todayObservationsJson.features[i].properties.precipitationLastHour.unitCode.includes(':m'))
-                obsData.precipInches[lenObs - 1 - i] = m2in(obsData.precipInches[lenObs - 1 - i])
+            
             if (!plotObservedPrecip && obsData.precipInches[lenObs - 1 - i] > 0)
                 plotObservedPrecip = true
             obsData.time[lenObs - 1 - i] = new Date(todayObservationsJson.features[i].properties.timestamp)
@@ -553,113 +374,93 @@ function getWeather(lat, lon, reverseGeo=false) {
                 
                 
                 
-                timeLength = gridProps.temperature.values.length
-                
-                
-                
-                //  Match min temperature to max temperature
-                const minDate0 = gridProps.minTemperature.values[0].validTime.split('T')[0]
-                const maxDate0 = gridProps.maxTemperature.values[0].validTime.split('T')[0]
-                if (minDate0 != maxDate0) {
-                    if (minDate0 < maxDate0)
-                        gridProps.minTemperature.values = gridProps.minTemperature.values.slice(1)
-                    else
-                        gridProps.maxTemperature.values = gridProps.maxTemperature.values.slice(1)
-                }
-                const minDateEnd = gridProps.minTemperature.values.slice(-1)[0].validTime.split('T')[0]
-                const maxDateEnd = gridProps.maxTemperature.values.slice(-1)[0].validTime.split('T')[0]
-                if (minDateEnd != maxDateEnd) {
-                    if (minDateEnd > maxDateEnd)
-                        gridProps.minTemperature.values = gridProps.minTemperature.values.slice(0,-1)
-                    else
-                        gridProps.maxTemperature.values = gridProps.maxTemperature.values.slice(0,-1)
-                }
+            timeLength = gridProps.temperature.values.length
+            
+            
+            
+            //  Match min temperature to max temperature
+            const minDate0 = gridProps.minTemperature.values[0].validTime.split('T')[0]
+            const maxDate0 = gridProps.maxTemperature.values[0].validTime.split('T')[0]
+            if (minDate0 != maxDate0) {
+                if (minDate0 < maxDate0)
+                    gridProps.minTemperature.values = gridProps.minTemperature.values.slice(1)
+                else
+                    gridProps.maxTemperature.values = gridProps.maxTemperature.values.slice(1)
+            }
+            const minDateEnd = gridProps.minTemperature.values.slice(-1)[0].validTime.split('T')[0]
+            const maxDateEnd = gridProps.maxTemperature.values.slice(-1)[0].validTime.split('T')[0]
+            if (minDateEnd != maxDateEnd) {
+                if (minDateEnd > maxDateEnd)
+                    gridProps.minTemperature.values = gridProps.minTemperature.values.slice(0,-1)
+                else
+                    gridProps.maxTemperature.values = gridProps.maxTemperature.values.slice(0,-1)
+            }
 
-                let numBars = gridProps.minTemperature.values.length
+            let numBars = gridProps.minTemperature.values.length
 
-                //  Convert celcius to farenheit
-                if (gridProps.minTemperature.uom.includes('degC')) {
-                    for (let i = 0; i < numBars; i++) {
-                        gridProps.minTemperature.values[i].value = c2f(gridProps.minTemperature.values[i].value)
-                        gridProps.maxTemperature.values[i].value = c2f(gridProps.maxTemperature.values[i].value)
-                    }
-                    gridProps.minTemperature.uom = 'degF'
-                    gridProps.maxTemperature.uom = 'degF'
+            //  Convert celcius to farenheit
+            if (gridProps.minTemperature.uom.includes('degC')) {
+                for (let i = 0; i < numBars; i++) {
+                    gridProps.minTemperature.values[i].value = c2f(gridProps.minTemperature.values[i].value)
+                    gridProps.maxTemperature.values[i].value = c2f(gridProps.maxTemperature.values[i].value)
                 }
+                gridProps.minTemperature.uom = 'degF'
+                gridProps.maxTemperature.uom = 'degF'
+            }
 
-                //   Find common min and max for all bar charts
-                let minT = gridProps.minTemperature.values[0].value
-                let maxT = gridProps.maxTemperature.values[0].value
-                for (let i = 1; i < numBars; i++) {
-                    if (gridProps.minTemperature.values[i].value < minT)
-                        minT = gridProps.minTemperature.values[i].value
-                    if (gridProps.maxTemperature.values[i].value > maxT)
-                        maxT = gridProps.maxTemperature.values[i].value
-                }
+            //   Find common min and max for all bar charts
+            let minT = gridProps.minTemperature.values[0].value
+            let maxT = gridProps.maxTemperature.values[0].value
+            for (let i = 1; i < numBars; i++) {
+                if (gridProps.minTemperature.values[i].value < minT)
+                    minT = gridProps.minTemperature.values[i].value
+                if (gridProps.maxTemperature.values[i].value > maxT)
+                    maxT = gridProps.maxTemperature.values[i].value
+            }
 
-                //  Generate data arrays
-                let todayIsIdx0 = ((new Date(gridProps.minTemperature.values[0].validTime.split('T')[0])).getUTCDate() == new Date().getDate())
+            //  Generate data arrays
+            let todayIsIdx0 = ((new Date(gridProps.minTemperature.values[0].validTime.split('T')[0])).getUTCDate() == new Date().getDate())
+            
+            
+            const validDay = Array(numBars)
+            let i = 0
+            var thisIsToday = (i == 0 && !todayIsIdx0) || todayIsIdx0
+            while (i < numBars) {
+                const div = document.createElement('button');
+                div.style.outline = 'none'
+                div.style.cursor = 'Pointer'
+                div.style.border='none'
+                div.style.width = "100%";
+                div.style.display = "flex";
+                div.style['margin'] = '0px'
+                div.style['padding'] = '0px'
+                const buttonElem = document.getElementById("days").appendChild(div)
+                buttonElem.classList.add('collapsible')
                 
-                
-                const validDay = Array(numBars)
-                let i = 0
-                var thisIsToday = (i == 0 && !todayIsIdx0) || todayIsIdx0
-                while (i < numBars) {
-                    console.log(i, thisIsToday)
-                    const div = document.createElement('button');
-                    div.style.outline = 'none'
-                    div.style.cursor = 'Pointer'
-                    div.style.border='none'
-                    div.style.width = "100%";
-                    div.style.display = "flex";
-                    div.style['margin'] = '0px'
-                    div.style['padding'] = '0px'
-                    const buttonElem = document.getElementById("days").appendChild(div)
-                    buttonElem.classList.add('collapsible')
-                    
-                    // create content of collapsible
-                    if (thisIsToday) {
-                        buttonElem.onclick =  function() {
-                            this.classList.toggle("active");
-                            const content = this.nextElementSibling
-                            if (content.style.maxHeight){
-                                content.style.maxHeight = null;
-                            } else {
-                                if (!content.classList.contains('generated')) {
-                                    content.classList.add("generated")
-                                }
-                                content.style.maxHeight = content.scrollHeight + "px";
+                // create content of collapsible
+                if (thisIsToday) {
+                    buttonElem.onclick =  function() {
+                        this.classList.toggle("active");
+                        const content = this.nextElementSibling
+                        if (content.style.maxHeight){
+                            content.style.maxHeight = null;
+                        } else {
+                            if (!content.classList.contains('generated')) {
+                                content.classList.add("generated")
                             }
-                        }
-                        const content = document.createElement('div')
-                        content.classList.add('content')
-                        content.classList.add('generated')
-                        content.style.width = '100%'
-                        document.getElementById("days").appendChild(content)
-                        todayData = todayPlots(gridProps, todayObservationsJson, stationID,content, todayMidnight, lastMidnight, firstTime)     
-                        if (todayIsIdx0) {
-                            // find corresponding day.  If Daytime available, choose it.  else choose nighttime.
-                            for (let d = 0; d < dayPeriods.length; d++) {
-                                if (dayPeriods[d].startTime.split('T')[0] == gridProps.minTemperature.values[0].validTime.split('T')[0]) {
-                                    if (dayPeriods[d].isDaytime) {
-                                        currentDay = dayPeriods[d]
-                                        break
-                                    }
-                                    else {
-                                        currentDay = dayPeriods[d]
-                                        break
-                                    }
-                                }
-                            }
-                            todayData.icon = currentDay.icon
+                            content.style.maxHeight = content.scrollHeight + "px";
                         }
                     }
-                    if (!thisIsToday) {
-                        validDay[i] = gridProps.minTemperature.values[i].validTime.split('T')[0]
-                    
+                    const content = document.createElement('div')
+                    content.classList.add('content')
+                    content.classList.add('generated')
+                    content.style.width = '100%'
+                    document.getElementById("days").appendChild(content)
+                    todayData = todayPlots(gridProps, todayObservationsJson, stationID,content, todayMidnight, lastMidnight, firstTime)     
+                    if (todayIsIdx0) {
                         // find corresponding day.  If Daytime available, choose it.  else choose nighttime.
                         for (let d = 0; d < dayPeriods.length; d++) {
-                            if (dayPeriods[d].startTime.split('T')[0] == validDay[i]) {
+                            if (dayPeriods[d].startTime.split('T')[0] == gridProps.minTemperature.values[0].validTime.split('T')[0]) {
                                 if (dayPeriods[d].isDaytime) {
                                     currentDay = dayPeriods[d]
                                     break
@@ -670,302 +471,321 @@ function getWeather(lat, lon, reverseGeo=false) {
                                 }
                             }
                         }
-                        
-                        const localMidnight = new Date(validDay[i])
-                        localMidnight.setMinutes(localMidnight.getMinutes() + localMidnight.getTimezoneOffset())
-                        const tempData = generateDataOnDate(gridProps, ['temperature'], localMidnight, 25)['temperature'].data
-                        
-                        // Overwrite min and max based on temperature profiles (hacky)
-                        let minti = tempData[0]
-                        let maxti = tempData[0]
-                        for (let t = 1; t < tempData.length; t++) {
-                            if (tempData[t] > maxti)
-                                maxti = tempData[t]
-                            if (tempData[t] < minti)
-                                minti = tempData[t]
+                        todayData.icon = currentDay.icon
+                    }
+                }
+                if (!thisIsToday) {
+                    validDay[i] = gridProps.minTemperature.values[i].validTime.split('T')[0]
+                
+                    // find corresponding day.  If Daytime available, choose it.  else choose nighttime.
+                    for (let d = 0; d < dayPeriods.length; d++) {
+                        if (dayPeriods[d].startTime.split('T')[0] == validDay[i]) {
+                            if (dayPeriods[d].isDaytime) {
+                                currentDay = dayPeriods[d]
+                                break
+                            }
+                            else {
+                                currentDay = dayPeriods[d]
+                                break
+                            }
                         }
-                        gridProps.minTemperature.values[i].value = minti
-                        gridProps.maxTemperature.values[i].value = maxti
+                    }
+                    
+                    const localMidnight = new Date(validDay[i])
+                    localMidnight.setMinutes(localMidnight.getMinutes() + localMidnight.getTimezoneOffset())
+                    const tempData = generateDataOnDate(gridProps, ['temperature'], localMidnight, 25)['temperature'].data
+                    
+                    // Overwrite min and max based on temperature profiles (hacky)
+                    let minti = tempData[0]
+                    let maxti = tempData[0]
+                    for (let t = 1; t < tempData.length; t++) {
+                        if (tempData[t] > maxti)
+                            maxti = tempData[t]
+                        if (tempData[t] < minti)
+                            minti = tempData[t]
+                    }
+                    gridProps.minTemperature.values[i].value = minti
+                    gridProps.maxTemperature.values[i].value = maxti
 
-                        buttonElem.onclick =  function(i) {
-                            return function() {
-                            this.classList.toggle("active");
-                            const content = this.nextElementSibling
-                            if (content.style.maxHeight){
-                                content.style.maxHeight = null;
-                            } else {
-                                if (!content.classList.contains('generated')) {
-                                    content.classList.add("generated")
+                    buttonElem.onclick =  function(i) {
+                        return function() {
+                        this.classList.toggle("active");
+                        const content = this.nextElementSibling
+                        if (content.style.maxHeight){
+                            content.style.maxHeight = null;
+                        } else {
+                            if (!content.classList.contains('generated')) {
+                                content.classList.add("generated")
 
-                                    const fields = ['temperature', 'apparentTemperature', 'probabilityOfPrecipitation', 'quantitativePrecipitation']
-                                    const localMidnight = new Date(validDay[i])
-                                    localMidnight.setMinutes(localMidnight.getMinutes() + localMidnight.getTimezoneOffset())
-                                    const tempData = generateDataOnDate(gridProps, fields, localMidnight, 25)
-                                    const xmin = localMidnight
-                                    const xmax = new Date(xmin)
-                                    xmax.setHours(xmax.getHours() + 24)
-                                    
-                                    //  add day description (not working yet)
+                                const fields = ['temperature', 'apparentTemperature', 'probabilityOfPrecipitation', 'quantitativePrecipitation']
+                                const localMidnight = new Date(validDay[i])
+                                localMidnight.setMinutes(localMidnight.getMinutes() + localMidnight.getTimezoneOffset())
+                                const tempData = generateDataOnDate(gridProps, fields, localMidnight, 25)
+                                const xmin = localMidnight
+                                const xmax = new Date(xmin)
+                                xmax.setHours(xmax.getHours() + 24)
+                                
+                                //  add day description (not working yet)
 //                                         const div1 = document.createElement('div')
 //                                         const text = document.createTextNode(currentDay.detailedForecast)
 //                                         div1.appendChild(text)
 //                                         div1.style.width = "90%"
 //                                         div1.style.display = "inline-block"
 //                                         content.appendChild(div1)
-                                    
-                                    //  Elem = div for temperature plot
-                                    const div2 = document.createElement('div')
-                                    div2.style.width = "90%"
-                                    div2.style.display = "inline-block"
-                                    const elem = content.appendChild(div2)
-                                    
-                                    // Determine if apparent temp is different from actual
-                                    let tdiff = 0
-                                    for (let i = 0; i < tempData['temperature'].data.length; i++)
-                                        tdiff += Math.abs(tempData['temperature'].data[i]-tempData['apparentTemperature'].data[i])
-                                    let plotApparent = (tdiff > 0)
+                                
+                                //  Elem = div for temperature plot
+                                const div2 = document.createElement('div')
+                                div2.style.width = "90%"
+                                div2.style.display = "inline-block"
+                                const elem = content.appendChild(div2)
+                                
+                                // Determine if apparent temp is different from actual
+                                let tdiff = 0
+                                for (let i = 0; i < tempData['temperature'].data.length; i++)
+                                    tdiff += Math.abs(tempData['temperature'].data[i]-tempData['apparentTemperature'].data[i])
+                                let plotApparent = (tdiff > 0)
 
-                                    //  Temperature line plot
-                                    const layout2 = {
-                                        height: 200,
-                                        paper_bgcolor:'rgba(0,0,0,0)',
-                                        plot_bgcolor:'rgba(0,0,0,0)',
-                                        title: 'Temperature (' + degreeSymbol + 'F)',
-                                        xaxis: {
-                                            type:'date',
-                                            tickformat: '%-I %p',
-                                            fixedrange: true,
-                                            showgrid:false,
-                                            range: [xmin, xmax],
-                                        },
-                                        yaxis: {
-                                            fixedrange: true,
-                                            showgrid: false,
-                                            gridcolor:'rgba(0,0,0,0.25)',
-                                        },
-                                        legend: {
-                                            x: 1,
-                                            y: 1,
-                                            xanchor: 'right',
-                                            yanchor: 'top',
-                                            traceorder: 'reversed',
-                                        },
-                                        margin: {b:30, t:40,l:30,r:30},
-                                    }
-                                    
-                                    if (!plotApparent)
-                                        layout2.showlegend = false
-
-                                    const config2 = {
-                                        responsive: true,
-                                        displayModeBar: false,
-                                    }
-
-                                    const traces2 = Array(2)
-                                    traces2[1] = {
-                                        x: tempData['temperature'].time,
-                                        y: tempData['temperature'].data,
-                                        mode:'lines',
-                                        type:'scatter',
-                                        line: {
-                                            color: '#000',
-                                            width: 3,
-                                        },
-                                        name: 'Actual',
-                                    }
-                                    traces2[0] = {
-                                        x: tempData['apparentTemperature'].time,
-                                        y: tempData['apparentTemperature'].data,
-                                        mode:'lines',
-                                        type:'scatter',
-                                        line: {
-                                            color: '#888',
-                                            width: 3,
-                                        },
-                                        name: 'Feels Like',
-                                    }
-                                    if (plotApparent)
-                                        Plotly.newPlot(elem, traces2, layout2, config2)
-                                    else
-                                        Plotly.newPlot(elem, [traces2[1]], layout2, config2)
-
-                                    
-                                    //  Elem2 = div for precipitation plot
-                                    const div3 = document.createElement('div')
-                                    div3.style.width = "90%"
-                                    div3.style.display = "inline-block"
-                                    const elem2 = content.appendChild(div3)
-
-                                    //  Precipitation plot
-                                    //  Determine whether to show inches bar chart
-                                    //  Sum over all quantitative precipitation
-                                    let precipSum = 0
-                                    tempData['quantitativePrecipitation'].data.forEach(function (value, index) {
-                                        precipSum += value
-                                    })
-                                    const plotQPrec = (precipSum > 0)
-                                    
-                                    const layout3 = {
-                                        height: 200,
-                                        paper_bgcolor:'rgba(0,0,0,0)',
-                                        plot_bgcolor:'rgba(0,0,0,0)',
-                                        title: 'Precipitation',
-                                        xaxis: {
-                                            type:'date',
-                                            tickformat: '%-I %p',
-                                            fixedrange: true,
-                                            range: [xmin, xmax],
-                                            showgrid:false,
-                                        },
-                                        yaxis: {
-                                            fixedrange: true,
-                                            range: [0,101],
-                                            showgrid:false,
-                                            gridcolor:'rgba(0,0,0,0.25)',
-                                            title: '% Chance',                                            
-                                        },
-                                        
-                                        showlegend: false,
-                                        margin: {b:30, t:40,l:40,r:50},
-                                    }
-
-                                    let traces3 = [{
-                                        x: tempData['probabilityOfPrecipitation'].time,
-                                        y: tempData['probabilityOfPrecipitation'].data,
-                                        mode: 'lines',
-                                        type: 'scatter',
-                                        line: {
-                                            color: '#444',
-                                            width: 3,
-                                        },
-                                        name: '% Chance',
-                                        yaxis: 'y1',
-                                    }]
-                                    
-                                    if (plotQPrec) {
-                                        maxInch = Math.max(...tempData['quantitativePrecipitation'].data)
-                                        traces3 = [{
-                                        x: tempData['quantitativePrecipitation'].time,
-                                        y: tempData['quantitativePrecipitation'].data,
-                                        type: 'bar',
-                                        yaxis: 'y2',
-                                        name: 'Inches',
-                                        marker: {color: '#1F77B4', opacity: 0.6},
-                                        }, traces3[0]]
-                                        
-                                        layout3.yaxis2 = {
-                                            title: 'Inches',
-                                            titlefont: {color: '#1F77B4'},
-                                            tickfont: {color: '#1F77B4'},
-                                            overlaying: 'y',
-                                            side: 'right',
-                                            fixedrange: true,
-
-                                        }
-                                        
-                                        const minInchRange = 0.2
-                                        if (maxInch < minInchRange) {
-                                            layout3.yaxis2.range = [0,minInchRange]
-                                        }
-                                        
-                                        layout3.yaxis2.overlaying = 'y1'
-                                    }
-                                    Plotly.newPlot(elem2, traces3, layout3, config2)
+                                //  Temperature line plot
+                                const layout2 = {
+                                    height: 200,
+                                    paper_bgcolor:'rgba(0,0,0,0)',
+                                    plot_bgcolor:'rgba(0,0,0,0)',
+                                    title: 'Temperature (' + degreeSymbol + 'F)',
+                                    xaxis: {
+                                        type:'date',
+                                        tickformat: '%-I %p',
+                                        fixedrange: true,
+                                        showgrid:false,
+                                        range: [xmin, xmax],
+                                    },
+                                    yaxis: {
+                                        fixedrange: true,
+                                        showgrid: false,
+                                        gridcolor:'rgba(0,0,0,0.25)',
+                                    },
+                                    legend: {
+                                        x: 1,
+                                        y: 1,
+                                        xanchor: 'right',
+                                        yanchor: 'top',
+                                        traceorder: 'reversed',
+                                    },
+                                    margin: {b:30, t:40,l:30,r:30},
                                 }
-                                content.style.maxHeight = content.scrollHeight + "px";
+                                
+                                if (!plotApparent)
+                                    layout2.showlegend = false
+
+                                const config2 = {
+                                    responsive: true,
+                                    displayModeBar: false,
+                                }
+
+                                const traces2 = Array(2)
+                                traces2[1] = {
+                                    x: tempData['temperature'].time,
+                                    y: tempData['temperature'].data,
+                                    mode:'lines',
+                                    type:'scatter',
+                                    line: {
+                                        color: '#000',
+                                        width: 3,
+                                    },
+                                    name: 'Actual',
+                                }
+                                traces2[0] = {
+                                    x: tempData['apparentTemperature'].time,
+                                    y: tempData['apparentTemperature'].data,
+                                    mode:'lines',
+                                    type:'scatter',
+                                    line: {
+                                        color: '#888',
+                                        width: 3,
+                                    },
+                                    name: 'Feels Like',
+                                }
+                                if (plotApparent)
+                                    Plotly.newPlot(elem, traces2, layout2, config2)
+                                else
+                                    Plotly.newPlot(elem, [traces2[1]], layout2, config2)
+
+                                
+                                //  Elem2 = div for precipitation plot
+                                const div3 = document.createElement('div')
+                                div3.style.width = "90%"
+                                div3.style.display = "inline-block"
+                                const elem2 = content.appendChild(div3)
+
+                                //  Precipitation plot
+                                //  Determine whether to show inches bar chart
+                                //  Sum over all quantitative precipitation
+                                let precipSum = 0
+                                tempData['quantitativePrecipitation'].data.forEach(function (value, index) {
+                                    precipSum += value
+                                })
+                                const plotQPrec = (precipSum > 0)
+                                
+                                const layout3 = {
+                                    height: 200,
+                                    paper_bgcolor:'rgba(0,0,0,0)',
+                                    plot_bgcolor:'rgba(0,0,0,0)',
+                                    title: 'Precipitation',
+                                    xaxis: {
+                                        type:'date',
+                                        tickformat: '%-I %p',
+                                        fixedrange: true,
+                                        range: [xmin, xmax],
+                                        showgrid:false,
+                                    },
+                                    yaxis: {
+                                        fixedrange: true,
+                                        range: [0,101],
+                                        showgrid:false,
+                                        gridcolor:'rgba(0,0,0,0.25)',
+                                        title: '% Chance',                                            
+                                    },
+                                    
+                                    showlegend: false,
+                                    margin: {b:30, t:40,l:40,r:50},
+                                }
+
+                                let traces3 = [{
+                                    x: tempData['probabilityOfPrecipitation'].time,
+                                    y: tempData['probabilityOfPrecipitation'].data,
+                                    mode: 'lines',
+                                    type: 'scatter',
+                                    line: {
+                                        color: '#444',
+                                        width: 3,
+                                    },
+                                    name: '% Chance',
+                                    yaxis: 'y1',
+                                }]
+                                
+                                if (plotQPrec) {
+                                    maxInch = Math.max(...tempData['quantitativePrecipitation'].data)
+                                    traces3 = [{
+                                    x: tempData['quantitativePrecipitation'].time,
+                                    y: tempData['quantitativePrecipitation'].data,
+                                    type: 'bar',
+                                    yaxis: 'y2',
+                                    name: 'Inches',
+                                    marker: {color: '#1F77B4', opacity: 0.6},
+                                    }, traces3[0]]
+                                    
+                                    layout3.yaxis2 = {
+                                        title: 'Inches',
+                                        titlefont: {color: '#1F77B4'},
+                                        tickfont: {color: '#1F77B4'},
+                                        overlaying: 'y',
+                                        side: 'right',
+                                        fixedrange: true,
+
+                                    }
+                                    
+                                    const minInchRange = 0.2
+                                    if (maxInch < minInchRange) {
+                                        layout3.yaxis2.range = [0,minInchRange]
+                                    }
+                                    
+                                    layout3.yaxis2.overlaying = 'y1'
+                                }
+                                Plotly.newPlot(elem2, traces3, layout3, config2)
                             }
-                        }}(i)
-                    }
+                            content.style.maxHeight = content.scrollHeight + "px";
+                        }
+                    }}(i)
+                }
+                
+                //  D3 bar
+                if (thisIsToday) {
+                    minT = todayData.minTemp < minT ? todayData.minTemp : minT
+                    maxT = todayData.maxTemp > maxT ? todayData.maxTemp : maxT
+                }
+                const iconSize = 40
+                const iconSpace = 10
+                const svgBarBoxH = 50
+                const svgBarH = 20
+                const svgBarTextWidth = 50
+                const svgBarLabelPadding = 45
+                const svgBarDegreeLabelPadding = 4
+                const xExtent = [minT, maxT]
+                const plusPadding = 14
+                const xRange = [svgBarTextWidth + svgBarLabelPadding, buttonElem.clientWidth - svgBarLabelPadding - plusPadding - iconSize - iconSpace]
+                const barXScale = d3.scaleLinear().range(xRange).domain(xExtent)
+                const dateFormatter = d3.timeFormat('%a')
+                const dateParser = d3.timeParse('%Y-%m-%d')
+                const weatherIcon = document.createElement("img")
+                weatherIcon.src = todayIsIdx0 ? currentDay.icon : thisIsToday ? todayData.icon : currentDay.icon
+                if (!thisIsToday) {
+                    weatherIcon.alt = currentDay.shortForecast
+                    weatherIcon.title = currentDay.shortForecast
+                }
+                weatherIcon.height = iconSize
+                weatherIcon.style['margin-right'] = iconSpace + 'px'
+                buttonElem.appendChild(weatherIcon)
+                const svgBar = d3.select(buttonElem)
+                    .append('svg')
+                    .attr("width", '100%')
+                    .attr("height", svgBarBoxH)
+                svgBar.append('text')
+                    .attr('x', 0)
+                    .attr('y', 0.5 * svgBarBoxH)
+                    .attr('dominant-baseline', 'middle')
+                    .attr('text-anchor', 'start')
+                    .style('font-weight', 'bold')
+                    .style('font-size', '15px')
+                    .text(thisIsToday ? 'Today' : dateFormatter(dateParser(validDay[i])))
+                const xScaleMin = barXScale(thisIsToday ? todayData.minTemp : gridProps.minTemperature.values[i].value)
+                const xScaleMax = barXScale(thisIsToday ? todayData.maxTemp : gridProps.maxTemperature.values[i].value)
+                //  Create rectangle
+                svgBar.append('rect')
+                    .attr('x', xScaleMin)
+                    .attr('y', 0.5 * (svgBarBoxH - svgBarH))
+                    .attr('width', xScaleMax - xScaleMin)
+                    .attr('height', svgBarH)
+                    .attr('fill', '#737373')
                     
-                    //  D3 bar
-                    if (thisIsToday) {
-                        minT = todayData.minTemp < minT ? todayData.minTemp : minT
-                        maxT = todayData.maxTemp > maxT ? todayData.maxTemp : maxT
-                    }
-                    const iconSize = 40
-                    const iconSpace = 10
-                    const svgBarBoxH = 50
-                    const svgBarH = 20
-                    const svgBarTextWidth = 50
-                    const svgBarLabelPadding = 45
-                    const svgBarDegreeLabelPadding = 4
-                    const xExtent = [minT, maxT]
-                    const plusPadding = 14
-                    const xRange = [svgBarTextWidth + svgBarLabelPadding, buttonElem.clientWidth - svgBarLabelPadding - plusPadding - iconSize - iconSpace]
-                    const barXScale = d3.scaleLinear().range(xRange).domain(xExtent)
-                    const dateFormatter = d3.timeFormat('%a')
-                    const dateParser = d3.timeParse('%Y-%m-%d')
-                    const weatherIcon = document.createElement("img")
-                    weatherIcon.src = todayIsIdx0 ? currentDay.icon : thisIsToday ? todayData.icon : currentDay.icon
-                    if (!thisIsToday) {
-                        weatherIcon.alt = currentDay.shortForecast
-                        weatherIcon.title = currentDay.shortForecast
-                    }
-                    weatherIcon.height = iconSize
-                    weatherIcon.style['margin-right'] = iconSpace + 'px'
-                    buttonElem.appendChild(weatherIcon)
-                    const svgBar = d3.select(buttonElem)
-                        .append('svg')
-                        .attr("width", '100%')
-                        .attr("height", svgBarBoxH)
-                    svgBar.append('text')
-                        .attr('x', 0)
-                        .attr('y', 0.5 * svgBarBoxH)
-                        .attr('dominant-baseline', 'middle')
-                        .attr('text-anchor', 'start')
-                        .style('font-weight', 'bold')
-                        .style('font-size', '15px')
-                        .text(thisIsToday ? 'Today' : dateFormatter(dateParser(validDay[i])))
-                    const xScaleMin = barXScale(thisIsToday ? todayData.minTemp : gridProps.minTemperature.values[i].value)
-                    const xScaleMax = barXScale(thisIsToday ? todayData.maxTemp : gridProps.maxTemperature.values[i].value)
-                    //  Create rectangle
-                    svgBar.append('rect')
-                        .attr('x', xScaleMin)
-                        .attr('y', 0.5 * (svgBarBoxH - svgBarH))
-                        .attr('width', xScaleMax - xScaleMin)
-                        .attr('height', svgBarH)
-                        .attr('fill', '#737373')
-                        
-                    //  Append semi-circle on each side
-                    const circleR = 0.5 * svgBarH
-                    svgBar.append('circle')
-                        .attr('cx', xScaleMin)
-                        .attr('cy', 0.5 * svgBarBoxH)
-                        .attr('r', circleR)
-                        .attr('fill', '#737373')
-                    svgBar.append('circle')
-                        .attr('cx', xScaleMax)
-                        .attr('cy', 0.5 * svgBarBoxH)
-                        .attr('r', circleR)
-                        .attr('fill', '#737373')
-                        
-                    //  Text on each side
-                    svgBar.append('text')
-                        .attr('x', xScaleMin - svgBarDegreeLabelPadding - circleR)
-                        .attr('y', 0.5 * svgBarBoxH)
-                        .attr('text-anchor', 'end')
-                        .attr('dominant-baseline', 'middle')
-                        .text(Math.round(thisIsToday ? todayData.minTemp : gridProps.minTemperature.values[i].value).toString() + degreeSymbol)
-                    svgBar.append('text')
-                        .attr('x', xScaleMax + svgBarDegreeLabelPadding + circleR)
-                        .attr('y', 0.5 * svgBarBoxH)
-                        .attr('text-anchor', 'start')
-                        .attr('dominant-baseline', 'middle')
-                        .text(Math.round(thisIsToday ? todayData.maxTemp : gridProps.maxTemperature.values[i].value).toString() + degreeSymbol)
+                //  Append semi-circle on each side
+                const circleR = 0.5 * svgBarH
+                svgBar.append('circle')
+                    .attr('cx', xScaleMin)
+                    .attr('cy', 0.5 * svgBarBoxH)
+                    .attr('r', circleR)
+                    .attr('fill', '#737373')
+                svgBar.append('circle')
+                    .attr('cx', xScaleMax)
+                    .attr('cy', 0.5 * svgBarBoxH)
+                    .attr('r', circleR)
+                    .attr('fill', '#737373')
                     
-                    // create content of collapsible
-                    if (!thisIsToday) {
-                        const content = document.createElement('div')
-                        content.classList.add('content')
-                        content.style.width = '100%'
-                        document.getElementById("days").appendChild(content)
-                    }
-                    if (thisIsToday && !todayIsIdx0) {
-                        i -= 1
-                    }
-                    i += 1
-                    if (thisIsToday)
-                        thisIsToday = false
+                //  Text on each side
+                svgBar.append('text')
+                    .attr('x', xScaleMin - svgBarDegreeLabelPadding - circleR)
+                    .attr('y', 0.5 * svgBarBoxH)
+                    .attr('text-anchor', 'end')
+                    .attr('dominant-baseline', 'middle')
+                    .text(Math.round(thisIsToday ? todayData.minTemp : gridProps.minTemperature.values[i].value).toString() + degreeSymbol)
+                svgBar.append('text')
+                    .attr('x', xScaleMax + svgBarDegreeLabelPadding + circleR)
+                    .attr('y', 0.5 * svgBarBoxH)
+                    .attr('text-anchor', 'start')
+                    .attr('dominant-baseline', 'middle')
+                    .text(Math.round(thisIsToday ? todayData.maxTemp : gridProps.maxTemperature.values[i].value).toString() + degreeSymbol)
+                
+                // create content of collapsible
+                if (!thisIsToday) {
+                    const content = document.createElement('div')
+                    content.classList.add('content')
+                    content.style.width = '100%'
+                    document.getElementById("days").appendChild(content)
+                }
+                if (thisIsToday && !todayIsIdx0) {
+                    i -= 1
+                }
+                i += 1
+                if (thisIsToday)
+                    thisIsToday = false
                 }
             })
             })
@@ -973,58 +793,5 @@ function getWeather(lat, lon, reverseGeo=false) {
     })
 }
 
-//  Prints specified error
-function printError(message) {
-    document.getElementById("errors").appendChild(document.createTextNode(message))
-}
-
-// Get coordinate of location
-function geocode() {
-    const url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json&limit=1'
-    fetch_retry(url, {method:'GET'}, 5)
-    .then(function(response) { return response.json(); })
-    .then(function(nomJson) {
-        if (nomJson.length == 0) {
-            printError('Error: Location not identifiable from \"' + loc.value + '\".  Try again.')
-        }
-        else {
-            const lat = nomJson[0].lat
-            const lon = nomJson[0].lon
-            console.log('Geocode success: ' + loc.value + ' -> (' + lat + ', ' + lon + ')' )
-            getWeather(lat,lon)
-
-        }
-    })
-}
-
-function reverseGeocode(lat,lon) {
-    const url = 'https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lon + '&format=json&zoom=14'
-    fetch_retry(url, {method:'GET'}, 5)
-    .then(function(response) { return response.json(); })
-    .then(function(reverseJson) {
-        clearID('errors')
-        if (reverseJson.length == 0) {
-            printError('Error: Reverse geocoding failed.  Input: lat=' + lat + ', lon=' + lon)
-        }
-        else {
-            document.getElementById("textinput").value = reverseJson.display_name.slice(0, -(reverseJson.address.country.length + 2));
-        }
-    })
-}
-
-let showhelp = true
-function help() {
-    clearID('errors')
-    if (showhelp == true) {
-        printError('Enter a location by using your current location, the text search box, or the map by double-click, right click, or long press (mobile).')
-        showhelp = false
-    }
-    else
-        showhelp = true
-}
-
-function eucDist(coord1,coord2) {
-    return Math.sqrt(Math.pow(coord1[0] - coord2[0], 2) + Math.pow(coord1[1] - coord2[1], 2))
-}
 
 geocode()
