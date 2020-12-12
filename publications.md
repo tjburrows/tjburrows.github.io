@@ -5,6 +5,9 @@ permalink: /publications/
 ---
 
 ## Journal Papers
+[**Experimental and Numerical Investigation of Active Flow Control of a Serpentine Diffuser**](https://arc.aiaa.org/doi/10.2514/1.J059533) <br>
+Travis J. Burrows, Bojan Vukasinovic, Ari Glezer, Matthew T. Lakebrink, and Mori Mani <br>
+_AIAA Journal_, Dec 1 2020 .<br>
 
 [**Control of flow distortion in offset diffusers using trapped vorticity**](https://doi.org/10.1016/j.ijheatfluidflow.2018.11.003) <br>
 Travis J. Burrows, Bojan Vukasinovic, Matthew T. Lakebrink, Mortaza Mani, and Ari Glezer <br>
