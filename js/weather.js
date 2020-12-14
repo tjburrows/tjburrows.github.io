@@ -20,7 +20,6 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
     var minTemp
     var maxTemp
     var todayIcon
-        
     todayObservationsJson.features = todayObservationsJson.features.slice(1,)
     const lenObs = todayObservationsJson.features.length
     const plotObservations = lenObs  > 0
@@ -28,12 +27,13 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
     let todayForecast
     let plotObservedPrecip = false
     let mostRecentObsTimeMinus1hr
+    
     if (plotObservations) {
         todayIcon = todayObservationsJson.features[0].properties.icon
         const mostRecentObsTime = new Date(todayObservationsJson.features[0].properties.timestamp)
         mostRecentObsTimeMinus1hr = new Date(mostRecentObsTime)
         mostRecentObsTimeMinus1hr.setHours(mostRecentObsTimeMinus1hr.getHours() - 1)
-        for (let i = 0; i < lenObs; i++) {todayObservationsJson
+        for (let i = 0; i < lenObs; i++) {
             obsData.temperature[lenObs - 1 - i] = todayObservationsJson.features[i].properties.temperature.value
             if ('precipitationLastHour' in todayObservationsJson.features[i].properties) {
                 obsData.precipInches[lenObs - 1 - i] = todayObservationsJson.features[i].properties.precipitationLastHour.value
@@ -364,20 +364,13 @@ function getWeather(lat, lon, reverseGeo=false) {
                 todayMidnight.setDate(todayMidnight.getDate()+1)
             let lastMidnight = new Date(todayMidnight)
             lastMidnight.setDate(lastMidnight.getDate() - 1)
-            let yesterday1am = new Date(lastMidnight)
-            yesterday1am.setHours(yesterday1am.getHours()-1)
-            yesterday1am.setMinutes(yesterday1am.getMinutes() - yesterday1am.getTimezoneOffset())
-            fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations?start=' + encodeURIComponent(yesterday1am.toISOString().slice(0,-5) + '+00:00'), fetchOptions, 5)
+            let yesterday11pm = new Date(lastMidnight)
+            yesterday11pm.setHours(yesterday11pm.getHours()-1)
+            fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations?start=' + encodeURIComponent(lastMidnight.toISOString().slice(0,-5) + '+00:00'), fetchOptions, 5)
             .then(function(response) {return response.json()})
             .then(function(todayObservationsJson) {
             console.log("todays observations:", todayObservationsJson)
-                
-                
-                
             timeLength = gridProps.temperature.values.length
-            
-            
-            
             //  Match min temperature to max temperature
             const minDate0 = gridProps.minTemperature.values[0].validTime.split('T')[0]
             const maxDate0 = gridProps.maxTemperature.values[0].validTime.split('T')[0]
