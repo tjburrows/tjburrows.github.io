@@ -19,7 +19,7 @@ North Carolina State University, GPA 3.63
 
 ## Skills
 **Programming** <br>
-C, C++, MATLAB, Python, Javascript, GPU, MPI, OpenMP, Pandas
+C, C++, MATLAB, Python, Javascript, GPU, MPI, OpenMP, Pandas, Git
 
 [![Project Euler badge](https://projecteuler.net/profile/tjburrows.png)](https://projecteuler.net/)
 
