@@ -138,9 +138,11 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
     todayDiv2.style.width = "100%"
     todayDiv2.style.display = "inline-block"
     const elem2 = plotdiv.appendChild(todayDiv2)
-    
-    todayPrecipForecast = generateDataOnDate2(gridProps, ['quantitativePrecipitation', 'probabilityOfPrecipitation'], mostRecentObsTimeMinus1hr, todayMidnight)
-    
+    if (plotObservations)
+        todayPrecipForecast = generateDataOnDate2(gridProps, ['quantitativePrecipitation', 'probabilityOfPrecipitation'], mostRecentObsTimeMinus1hr, todayMidnight)
+    else
+        todayPrecipForecast = generateDataOnDate2(gridProps, ['quantitativePrecipitation', 'probabilityOfPrecipitation'], firstTime, todayMidnight)
+
     //  Determine whether to show inches bar chart
     //  Sum over all quantitative precipitation
     let precipSum = 0
