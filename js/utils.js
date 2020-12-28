@@ -233,11 +233,36 @@ function help() {
     button.classList.toggle('pushed')
 }
 
+
+function toggleButtonDisable() {
+    document.getElementById('button0').classList.toggle('disabled')
+    document.getElementById('button1').classList.toggle('disabled')
+    document.getElementById('button2').classList.toggle('disabled')
+    document.getElementById("textinput").toggleAttribute('readonly')
+}
+
+
 async function button0Func() {
     const buttonElem = document.getElementById('button0')
     if (!buttonElem.classList.contains('disabled')) {
-        buttonElem.classList.add('disabled')
+        toggleButtonDisable()
         await getRandomLocation()
-        buttonElem.classList.toggle('disabled')
+        toggleButtonDisable()
+    }
+}
+async function button1Func() {
+    const buttonElem = document.getElementById('button0')
+    if (!buttonElem.classList.contains('disabled')) {
+        toggleButtonDisable()
+        await getCurrentLocation()
+        toggleButtonDisable()
+    }
+}
+async function button2Func() {
+    const buttonElem = document.getElementById('button0')
+    if (!buttonElem.classList.contains('disabled')) {
+        toggleButtonDisable()
+        await geocode()
+        toggleButtonDisable()
     }
 }

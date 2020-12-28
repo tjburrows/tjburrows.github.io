@@ -9,9 +9,9 @@ var mapDrawn = false
 //  Allow pressing enter to submit
 loc.addEventListener("keyup", function(event) {
     if (event.keyCode === 13) {
-        loc.toggleAttribute('readonly')
-        event.preventDefault();
-        geocode().then(() => {loc.toggleAttribute('readonly')})
+        toggleButtonDisable()
+        event.preventDefault()
+        geocode().then(() => {toggleButtonDisable()})
     }
 })
 
@@ -267,18 +267,20 @@ async function getWeather(lat, lon, reverseGeo=false) {
     }
     
     
-    const fetchPoints = await fetch_retry('https://api.weather.gov/points/' + lat + ',' + lon, fetchOptions, 5)
+    const fetchPoints = await fetch_retry('https://api.weather.gov/points/' + lat + ',' + lon, fetchOptions, 10)
+    console.log(fetchPoints)
     const pointsJson = await (() => {return fetchPoints.json()})()
+    console.log(pointsJson)
     if (pointsJson == null || pointsJson.length == 0) {
             printError('Error: Weather at this location is not available from Weather.gov.')
     }
     else {
         clearID('conditions')
-        const fetch_points = fetch_retry(pointsJson.properties.observationStations, fetchOptions, 5)
-        const fetch_forecast = fetch_retry(pointsJson.properties.forecast, fetchOptions, 5)
+        const fetch_points = fetch_retry(pointsJson.properties.observationStations, fetchOptions, 10)
+        const fetch_forecast = fetch_retry(pointsJson.properties.forecast, fetchOptions, 10)
         const [response_points, respose_forecast] = await Promise.all([fetch_points, fetch_forecast]);
         const [stationsJson, forecastJson] = await Promise.all([(() => {return response_points.json()})(), (() => {return respose_forecast.json()})()]);
-        const fetch_grid = fetch_retry(pointsJson.properties.forecastGridData, fetchOptions, 5)
+        const fetch_grid = fetch_retry(pointsJson.properties.forecastGridData, fetchOptions, 10)
         
         const station = stationsJson.features[0]
         console.log('station:', station)
@@ -286,7 +288,7 @@ async function getWeather(lat, lon, reverseGeo=false) {
         if (station.properties.elevation.unitCode.includes('unit:m'))
             elevation = m2ft(elevation)
         stationID = station.properties.stationIdentifier
-        const response_ob = await fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations/latest?require_qc=true', fetchOptions, 5)
+        const response_ob = await fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations/latest?require_qc=true', fetchOptions, 10)
         const obJson =  await (async () => {return await response_ob.json()})()
         console.log('observation:', obJson)
         currentTemp = obJson.properties.temperature.value
@@ -341,6 +343,7 @@ async function getWeather(lat, lon, reverseGeo=false) {
             printError('Error: Weather at this location is not available from Weather.gov.')
         }
         else {
+            console.log('grid:', gridJson)
             gridProps = gridJson.properties
             const firstTime = new Date(gridProps.temperature.values[0].validTime.split('/')[0])
 
@@ -360,7 +363,9 @@ async function getWeather(lat, lon, reverseGeo=false) {
             const todayObservationsJson =  await (async () => {return await response_obs.json()})()
             
             console.log("todays observations:", todayObservationsJson)
+            
             timeLength = gridProps.temperature.values.length
+            
             //  Match min temperature to max temperature
             const minDate0 = gridProps.minTemperature.values[0].validTime.split('T')[0]
             const maxDate0 = gridProps.maxTemperature.values[0].validTime.split('T')[0]
@@ -377,6 +382,11 @@ async function getWeather(lat, lon, reverseGeo=false) {
                     gridProps.minTemperature.values = gridProps.minTemperature.values.slice(0,-1)
                 else
                     gridProps.maxTemperature.values = gridProps.maxTemperature.values.slice(0,-1)
+            }
+            
+            if ((new Date(gridProps.minTemperature.values[0].validTime.split('T')[0])).getUTCDate() < new Date().getDate()) {
+                gridProps.minTemperature.values = gridProps.minTemperature.values.slice(1)
+                gridProps.maxTemperature.values = gridProps.maxTemperature.values.slice(1)
             }
 
             let numBars = gridProps.minTemperature.values.length
@@ -402,12 +412,12 @@ async function getWeather(lat, lon, reverseGeo=false) {
             }
 
             //  Generate data arrays
-            let todayIsIdx0 = ((new Date(gridProps.minTemperature.values[0].validTime.split('T')[0])).getUTCDate() == new Date().getDate())
-            
+            var todayIsIdx0 = ((new Date(gridProps.minTemperature.values[0].validTime.split('T')[0])).getUTCDate() == new Date().getDate())
             
             const validDay = Array(numBars)
             let i = 0
             var thisIsToday = (i == 0 && !todayIsIdx0) || todayIsIdx0
+            var currentDay
             while (i < numBars) {
                 const div = document.createElement('button');
                 div.style.outline = 'none'
@@ -440,6 +450,7 @@ async function getWeather(lat, lon, reverseGeo=false) {
                     content.style.width = '100%'
                     document.getElementById("days").appendChild(content)
                     todayData = todayPlots(gridProps, todayObservationsJson, stationID,content, todayMidnight, lastMidnight, firstTime)     
+                    
                     if (todayIsIdx0) {
                         // find corresponding day.  If Daytime available, choose it.  else choose nighttime.
                         for (let d = 0; d < dayPeriods.length; d++) {
