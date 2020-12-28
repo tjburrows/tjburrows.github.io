@@ -9,13 +9,13 @@ function getCurrentLocation() {
     }
 } 
 
-function getRandomLocation() {
+async function getRandomLocation() {
     const randCoords = randUSA()
-    getWeather(randCoords[0], randCoords[1], true)
+    await getWeather(randCoords[0], randCoords[1], true)
 }
 
 //  Clear all child divs of an id
-function clearID(id) {
+async function clearID(id) {
     const node = document.getElementById(id)
     if (node !== null) {
         while (node.hasChildNodes()) {
@@ -187,22 +187,19 @@ function printError(message) {
 }
 
 // Get coordinate of location
-function geocode() {
+async function geocode() {
     const url = 'https://nominatim.openstreetmap.org/search?q=' + loc.value + '&format=json&limit=1'
-    fetch_retry(url, {method:'GET'}, 5)
-    .then(function(response) { return response.json(); })
-    .then(function(nomJson) {
-        if (nomJson.length == 0) {
-            printError('Error: Location not identifiable from \"' + loc.value + '\".  Try again.')
-        }
-        else {
-            const lat = nomJson[0].lat
-            const lon = nomJson[0].lon
-            console.log('Geocode success: ' + loc.value + ' -> (' + lat + ', ' + lon + ')' )
-            getWeather(lat,lon)
-
-        }
-    })
+    const response = await fetch_retry(url, {method:'GET'}, 5)
+    const nomJson =  await (async () => {return await response.json()})()
+    if (nomJson.length == 0) {
+        printError('Error: Location not identifiable from \"' + loc.value + '\".  Try again.')
+    }
+    else {
+        const lat = nomJson[0].lat
+        const lon = nomJson[0].lon
+        console.log('Geocode success: ' + loc.value + ' -> (' + lat + ', ' + lon + ')' )
+        await getWeather(lat,lon)
+    }
 }
 
 function reverseGeocode(lat,lon) {
@@ -234,4 +231,13 @@ function help() {
     else
         printError('Enter a location by using your current location, the text search box, or the map by double-click, right click, or long press (mobile).')
     button.classList.toggle('pushed')
+}
+
+async function button0Func() {
+    const buttonElem = document.getElementById('button0')
+    if (!buttonElem.classList.contains('disabled')) {
+        buttonElem.classList.add('disabled')
+        await getRandomLocation()
+        buttonElem.classList.toggle('disabled')
+    }
 }

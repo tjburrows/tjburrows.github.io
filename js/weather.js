@@ -9,8 +9,9 @@ var mapDrawn = false
 //  Allow pressing enter to submit
 loc.addEventListener("keyup", function(event) {
     if (event.keyCode === 13) {
+        loc.toggleAttribute('readonly')
         event.preventDefault();
-        document.getElementById("button2").click();
+        geocode().then(() => {loc.toggleAttribute('readonly')})
     }
 })
 
@@ -226,7 +227,7 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
 
 //  Get weather data
 const degreeSymbol = String.fromCharCode(176)
-function getWeather(lat, lon, reverseGeo=false) {
+async function getWeather(lat, lon, reverseGeo=false) {
 
     if (reverseGeo) {
         reverseGeocode(lat,lon)
@@ -237,6 +238,8 @@ function getWeather(lat, lon, reverseGeo=false) {
     clearID('errors')
     clearID('summary')
     clearID('conditions')
+    
+    
     var stationID
     //  Create map
     if (!mapDrawn) {
@@ -262,98 +265,82 @@ function getWeather(lat, lon, reverseGeo=false) {
         map.removeLayer(marker)
         marker = L.marker([lat,lon]).addTo(map);
     }
+    
+    
+    const fetchPoints = await fetch_retry('https://api.weather.gov/points/' + lat + ',' + lon, fetchOptions, 5)
+    const pointsJson = await (() => {return fetchPoints.json()})()
+    if (pointsJson == null || pointsJson.length == 0) {
+            printError('Error: Weather at this location is not available from Weather.gov.')
+    }
+    else {
+        clearID('conditions')
+        const fetch_points = fetch_retry(pointsJson.properties.observationStations, fetchOptions, 5)
+        const fetch_forecast = fetch_retry(pointsJson.properties.forecast, fetchOptions, 5)
+        const [response_points, respose_forecast] = await Promise.all([fetch_points, fetch_forecast]);
+        const [stationsJson, forecastJson] = await Promise.all([(() => {return response_points.json()})(), (() => {return respose_forecast.json()})()]);
+        const fetch_grid = fetch_retry(pointsJson.properties.forecastGridData, fetchOptions, 5)
+        
+        const station = stationsJson.features[0]
+        console.log('station:', station)
+        let elevation = station.properties.elevation.value
+        if (station.properties.elevation.unitCode.includes('unit:m'))
+            elevation = m2ft(elevation)
+        stationID = station.properties.stationIdentifier
+        const response_ob = await fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations/latest?require_qc=true', fetchOptions, 5)
+        const obJson =  await (async () => {return await response_ob.json()})()
+        console.log('observation:', obJson)
+        currentTemp = obJson.properties.temperature.value
+        const nowDiv = document.getElementById('conditions')
+        nowDiv.style['text-align'] = 'center'
+        const currentConditions = document.createElement("h4");
+        currentConditions.style['margin-bottom'] = '0px'
+        currentConditions.style['margin-top'] = '0px'
+        let statusString = ''
+        if (currentTemp === 0 || currentTemp) {
+            if (obJson.properties.temperature.unitCode.includes('degC')) {
+                currentTemp = Math.round(c2f(currentTemp))
+                obJson.properties.temperature.unitCode.includes = 'degF'
+            }
+            else {
+                currentTemp = Math.round(currentTemp)
+            }
+            statusString += currentTemp.toString() + degreeSymbol + ' '
+        }
 
-    fetch_retry('https://api.weather.gov/points/' + lat + ',' + lon, fetchOptions, 5)
-    .then(function(response) { return response.json() })
-    .then(function(pointsJson) {
-        if (pointsJson == null || pointsJson.length == 0) {
+        statusString += obJson.properties.textDescription
+        const temp = document.createTextNode(statusString)
+        currentConditions.appendChild(temp)
+        nowDiv.appendChild(currentConditions)
+
+        //  Create day by day summary
+        console.log("daydata:", forecastJson)
+        const dayProps = forecastJson.properties
+
+        //  Print text summary of present forecast
+        const nowDiv2 = document.createElement("div")
+        nowDiv2.style['text-align'] = 'left'
+        nowDiv2.style.display = 'flex'
+        const middleColumn = document.createElement("div");
+        middleColumn.style.width='100%'
+        const p1 = document.createElement("p");
+        const bold = document.createElement("b");
+        const prefix = document.createTextNode(dayProps.periods[0].name + ': ')
+        const summary = document.createTextNode(dayProps.periods[0].detailedForecast);
+        bold.appendChild(prefix)
+        p1.appendChild(bold)
+        p1.appendChild(summary)
+        middleColumn.appendChild(p1)
+        nowDiv2.appendChild(middleColumn)
+        document.getElementById('summary').appendChild(nowDiv2)
+        dayPeriods = dayProps.periods
+        
+        //  Create detailed forecasts
+        const [reponse_grid] = await Promise.all([fetch_grid]);
+        const gridJson =  await (async () => {return await reponse_grid.json()})()
+        if (gridJson == null || gridJson.length == 0 || gridJson.properties == undefined) {
             printError('Error: Weather at this location is not available from Weather.gov.')
         }
         else {
-            console.log("point:", pointsJson)
-            return pointsJson;
-        }
-    })
-    .then(function(pointsJson) {
-        clearID('conditions')
-        fetch_retry(pointsJson.properties.observationStations, fetchOptions, 5)
-        .then(function(response) { return response.json(); })
-        .then(function(json) {
-            const station = json.features[0]
-            console.log('station:', station)
-            let elevation = station.properties.elevation.value
-            if (station.properties.elevation.unitCode.includes('unit:m'))
-                elevation = m2ft(elevation)
-            stationID = station.properties.stationIdentifier
-            fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations/latest?require_qc=true', fetchOptions, 5)
-            .then(function(response) {return response.json()})
-            .then(function(json) {
-                console.log('observation:', json)
-                currentTemp = json.properties.temperature.value
-                nowDiv = document.getElementById('conditions')
-                nowDiv.style['text-align'] = 'center'
-                const currentConditions = document.createElement("h4");
-                currentConditions.style['margin-bottom'] = '0px'
-                currentConditions.style['margin-top'] = '0px'
-                let statusString = ''
-                if (currentTemp === 0 || currentTemp) {
-                    if (json.properties.temperature.unitCode.includes('degC')) {
-                        currentTemp = Math.round(c2f(currentTemp))
-                        json.properties.temperature.unitCode.includes = 'degF'
-                    }
-                    else {
-                        currentTemp = Math.round(currentTemp)
-                    }
-                    statusString += currentTemp.toString() + degreeSymbol + ' '
-                }
-
-                statusString += json.properties.textDescription
-                const temp = document.createTextNode(statusString)
-                currentConditions.appendChild(temp)
-                nowDiv.appendChild(currentConditions)
-            })
-        })
-
-        //  Create day by day summary
-        fetch_retry(pointsJson.properties.forecast, fetchOptions, 5)
-        .then(function(response) { return response.json(); })
-        .then(function(json) {
-            console.log("daydata:", json)
-            const dayProps = json.properties
-
-            //  Print text summary of present forecast
-            const nowDiv = document.createElement("div")
-            nowDiv.style['text-align'] = 'left'
-            nowDiv.style.display = 'flex'
-            const middleColumn = document.createElement("div");
-            middleColumn.style.width='100%'
-            const p1 = document.createElement("p");
-            const bold = document.createElement("b");
-            const prefix = document.createTextNode(dayProps.periods[0].name + ': ')
-            const summary = document.createTextNode(dayProps.periods[0].detailedForecast);
-            bold.appendChild(prefix)
-            p1.appendChild(bold)
-            p1.appendChild(summary)
-            middleColumn.appendChild(p1)
-            nowDiv.appendChild(middleColumn)
-            document.getElementById('summary').appendChild(nowDiv)
-            return dayProps.periods
-        })
-        .then(function(dayPeriods) {
-            //  Create detailed forecasts
-            fetch_retry(pointsJson.properties.forecastGridData, fetchOptions, 5)
-            .then(function(response) {
-                return response.json()})
-            .then(function(gridJson) {
-                if (gridJson == null || gridJson.length == 0 || gridJson.properties == undefined) {
-                    printError('Error: Weather at this location is not available from Weather.gov.')
-                }
-                else {
-                    console.log("griddata:", gridJson)
-                    return gridJson
-                }
-            })
-            .then(function(gridJson) {
             gridProps = gridJson.properties
             const firstTime = new Date(gridProps.temperature.values[0].validTime.split('/')[0])
 
@@ -368,9 +355,10 @@ function getWeather(lat, lon, reverseGeo=false) {
             lastMidnight.setDate(lastMidnight.getDate() - 1)
             let yesterday11pm = new Date(lastMidnight)
             yesterday11pm.setHours(yesterday11pm.getHours()-1)
-            fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations?start=' + encodeURIComponent(lastMidnight.toISOString().slice(0,-5) + '+00:00'), fetchOptions, 5)
-            .then(function(response) {return response.json()})
-            .then(function(todayObservationsJson) {
+            
+            const response_obs = await fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations?start=' + encodeURIComponent(lastMidnight.toISOString().slice(0,-5) + '+00:00'), fetchOptions, 5)
+            const todayObservationsJson =  await (async () => {return await response_obs.json()})()
+            
             console.log("todays observations:", todayObservationsJson)
             timeLength = gridProps.temperature.values.length
             //  Match min temperature to max temperature
@@ -782,10 +770,9 @@ function getWeather(lat, lon, reverseGeo=false) {
                 if (thisIsToday)
                     thisIsToday = false
                 }
-            })
-            })
-        })
-    })
+        }
+       
+    }
 }
 
 
