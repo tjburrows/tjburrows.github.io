@@ -6,7 +6,8 @@ const fetchOptions = {
 
 //  Create text search box
 const loc = document.getElementById("textinput")
-var mapDrawn = false, mark
+var mapDrawn = false
+var mark
 
 //  Allow pressing enter to submit
 loc.addEventListener("keyup", function(event) {
@@ -26,9 +27,8 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
     todayObservationsJson.features = todayObservationsJson.features.slice(1,)
     const lenObs = todayObservationsJson.features.length
     var plotObservations = lenObs  > 0
-    let obsData = {'temperature':Array(lenObs),'precipInches':Array(lenObs), 'time':Array(lenObs)}
+    let obsData = {'temperature':[], 'time':[]}
     let todayForecast
-    let plotObservedPrecip = false
     let mostRecentObsTimeMinus1hr
     var tomorrow1am = new Date(todayMidnight)
     tomorrow1am.setHours(tomorrow1am.getHours() + 1)
@@ -38,19 +38,14 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
         mostRecentObsTimeMinus1hr = new Date(mostRecentObsTime)
         mostRecentObsTimeMinus1hr.setHours(mostRecentObsTimeMinus1hr.getHours() - 1)
         for (let i = 0; i < lenObs; i++) {
-            obsData.temperature[lenObs - 1 - i] = todayObservationsJson.features[i].properties.temperature.value
-            if ('precipitationLastHour' in todayObservationsJson.features[i].properties) {
-                obsData.precipInches[lenObs - 1 - i] = todayObservationsJson.features[i].properties.precipitationLastHour.value
-                if (todayObservationsJson.features[i].properties.precipitationLastHour.unitCode.includes(':m'))
-                    obsData.precipInches[lenObs - 1 - i] = m2in(obsData.precipInches[lenObs - 1 - i])
+            if (todayObservationsJson.features[lenObs - 1 - i].properties.temperature.value != null) {
+                if (todayObservationsJson.features[lenObs - 1 - i].properties.temperature.unitCode.includes('degC')) {
+                    todayObservationsJson.features[lenObs - 1 - i].properties.temperature.value = c2f(todayObservationsJson.features[lenObs - 1 - i].properties.temperature.value)
+                    todayObservationsJson.features[lenObs - 1 - i].properties.temperature.unitCode = 'degF'
+                }
+                obsData.temperature.push(todayObservationsJson.features[lenObs - 1 - i].properties.temperature.value)
+                obsData.time.push(new Date(todayObservationsJson.features[lenObs - 1 - i].properties.timestamp))
             }
-                
-            if (todayObservationsJson.features[i].properties.temperature.unitCode.includes('degC'))
-                obsData.temperature[lenObs - 1 - i] = c2f(obsData.temperature[lenObs - 1 - i])
-            
-            if (!plotObservedPrecip && obsData.precipInches[lenObs - 1 - i] > 0)
-                plotObservedPrecip = true
-            obsData.time[lenObs - 1 - i] = new Date(todayObservationsJson.features[i].properties.timestamp)
         }
         todayForecast = generateDataOnDate2(gridProps, todayFields, mostRecentObsTimeMinus1hr, tomorrow1am)
     }
@@ -177,7 +172,7 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
         },
         
         showlegend: false,
-        margin: {b:30, t:40,l:40,r:30},
+        margin: {b:30, t:40,l:40,r:50},
     }
 
     let tracesTodayPrecip = [{
@@ -265,11 +260,11 @@ async function getWeather(lat, lon, reverseGeo=false) {
         map.options.dragging = !L.Browser.mobile
     }
     else {
-        mark.setLatLng([lat,lon])
-//         map.removeLayer(mark)
+//         mark.setLatLng([lat,lon])
+        map.removeLayer(mark)
         map.panTo([lat,lon]);
         
-        L.marker([lat,lon]).addTo(map);
+        mark = L.marker([lat,lon]).addTo(map);
     }
     
     
@@ -721,7 +716,8 @@ async function getWeather(lat, lon, reverseGeo=false) {
                 }
                 weatherIcon.height = iconSize
                 weatherIcon.style['margin-right'] = iconSpace + 'px'
-                buttonElem.appendChild(weatherIcon)
+                if (weatherIcon.src != null)
+                    buttonElem.appendChild(weatherIcon)
                 const svgBar = d3.select(buttonElem)
                     .append('svg')
                     .attr("width", '100%')
