@@ -1,10 +1,12 @@
+'use strict'
+
 const fetchOptions = {
     method:'GET',
 }
 
 //  Create text search box
 const loc = document.getElementById("textinput")
-var mapDrawn = false
+var mapDrawn = false, mark
 
 //  Allow pressing enter to submit
 loc.addEventListener("keyup", function(event) {
@@ -23,12 +25,13 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
     var todayIcon
     todayObservationsJson.features = todayObservationsJson.features.slice(1,)
     const lenObs = todayObservationsJson.features.length
-    const plotObservations = lenObs  > 0
+    var plotObservations = lenObs  > 0
     let obsData = {'temperature':Array(lenObs),'precipInches':Array(lenObs), 'time':Array(lenObs)}
     let todayForecast
     let plotObservedPrecip = false
     let mostRecentObsTimeMinus1hr
-    
+    var tomorrow1am = new Date(todayMidnight)
+    tomorrow1am.setHours(tomorrow1am.getHours() + 1)
     if (plotObservations) {
         todayIcon = todayObservationsJson.features[0].properties.icon
         const mostRecentObsTime = new Date(todayObservationsJson.features[0].properties.timestamp)
@@ -49,18 +52,18 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
                 plotObservedPrecip = true
             obsData.time[lenObs - 1 - i] = new Date(todayObservationsJson.features[i].properties.timestamp)
         }
-        todayForecast = generateDataOnDate2(gridProps, todayFields, mostRecentObsTimeMinus1hr, todayMidnight)
+        todayForecast = generateDataOnDate2(gridProps, todayFields, mostRecentObsTimeMinus1hr, tomorrow1am)
     }
     else {
-        todayForecast = generateDataOnDate2(gridProps, todayFields, firstTime, todayMidnight)
+        todayForecast = generateDataOnDate2(gridProps, todayFields, firstTime, tomorrow1am)
     }
     
     // Find minimum and maximum temperature
     minTemp = Math.min(...todayForecast['temperature'].data)
     maxTemp = Math.max(...todayForecast['temperature'].data)
     if (plotObservations) {
-        obsMin = Math.min(...obsData.temperature)
-        obsMax = Math.max(...obsData.temperature)
+        const obsMin = Math.min(...obsData.temperature)
+        const obsMax = Math.max(...obsData.temperature)
         minTemp = (obsMin < minTemp) ? obsMin : minTemp
         maxTemp = (obsMax > maxTemp) ? obsMax : maxTemp
     }
@@ -139,10 +142,11 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
     todayDiv2.style.width = "100%"
     todayDiv2.style.display = "inline-block"
     const elem2 = plotdiv.appendChild(todayDiv2)
+    var todayPrecipForecast
     if (plotObservations)
-        todayPrecipForecast = generateDataOnDate2(gridProps, ['quantitativePrecipitation', 'probabilityOfPrecipitation'], mostRecentObsTimeMinus1hr, todayMidnight)
+        todayPrecipForecast = generateDataOnDate2(gridProps, ['quantitativePrecipitation', 'probabilityOfPrecipitation'], mostRecentObsTimeMinus1hr, tomorrow1am)
     else
-        todayPrecipForecast = generateDataOnDate2(gridProps, ['quantitativePrecipitation', 'probabilityOfPrecipitation'], firstTime, todayMidnight)
+        todayPrecipForecast = generateDataOnDate2(gridProps, ['quantitativePrecipitation', 'probabilityOfPrecipitation'], firstTime, tomorrow1am)
 
     //  Determine whether to show inches bar chart
     //  Sum over all quantitative precipitation
@@ -173,7 +177,7 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
         },
         
         showlegend: false,
-        margin: {b:30, t:40,l:40,r:50},
+        margin: {b:30, t:40,l:40,r:30},
     }
 
     let tracesTodayPrecip = [{
@@ -193,7 +197,7 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
         displayModeBar: false,
     }
     if (plotQPrec) {
-        maxInch = Math.max(...todayPrecipForecast['quantitativePrecipitation'].data)
+        const maxInch = Math.max(...todayPrecipForecast['quantitativePrecipitation'].data)
         tracesTodayPrecip = [
         {
             x: todayPrecipForecast['quantitativePrecipitation'].time,
@@ -221,8 +225,7 @@ function todayPlots(gridProps, todayObservationsJson, stationID, plotdiv, todayM
         layoutTodayPrecip.yaxis2.overlaying = 'y1'
     }
     Plotly.newPlot(elem2, tracesTodayPrecip, layoutTodayPrecip, configTodayPrecip)
-    output = {'minTemp':minTemp, 'maxTemp':maxTemp, 'icon':todayIcon}
-    return output
+    return {'minTemp':minTemp, 'maxTemp':maxTemp, 'icon':todayIcon}
 }
 
 //  Get weather data
@@ -245,14 +248,15 @@ async function getWeather(lat, lon, reverseGeo=false) {
     if (!mapDrawn) {
         mapDrawn = true
         map = L.map("map1",{doubleClickZoom:false, scrollWheelZoom:false, dragging:!L.Browser.mobile}).setView([lat,lon], 5);
-        osmAttribution ='Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
-        leafletRadarAttribution ='<a href="https://github.com/rwev/leaflet-radar">Radar</a>';
+        const osmAttribution ='Map data &copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors';
+        const leafletRadarAttribution ='<a href="https://github.com/rwev/leaflet-radar">Radar</a>';
         L.tileLayer(
                 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                 {attribution: [osmAttribution, leafletRadarAttribution].join(" | "), dragging:!L.Browser.mobile}
         ).addTo(map);
-        marker = L.marker([lat,lon]).addTo(map);
-        radar = L.control.radar().addTo(map);
+        mark = L.marker([lat,lon])
+        mark.addTo(map);
+        const radar = L.control.radar().addTo(map);
         map.on('dblclick', function(e) {
         getWeather(e.latlng.lat, e.latlng.lng, true)
         }).on('contextmenu', function(e) {
@@ -261,9 +265,11 @@ async function getWeather(lat, lon, reverseGeo=false) {
         map.options.dragging = !L.Browser.mobile
     }
     else {
+        mark.setLatLng([lat,lon])
+//         map.removeLayer(mark)
         map.panTo([lat,lon]);
-        map.removeLayer(marker)
-        marker = L.marker([lat,lon]).addTo(map);
+        
+        L.marker([lat,lon]).addTo(map);
     }
     
     
@@ -291,7 +297,7 @@ async function getWeather(lat, lon, reverseGeo=false) {
         const response_ob = await fetch_retry('https://api.weather.gov/stations/' + stationID + '/observations/latest?require_qc=true', fetchOptions, 10)
         const obJson =  await (async () => {return await response_ob.json()})()
         console.log('observation:', obJson)
-        currentTemp = obJson.properties.temperature.value
+        var currentTemp = obJson.properties.temperature.value
         const nowDiv = document.getElementById('conditions')
         nowDiv.style['text-align'] = 'center'
         const currentConditions = document.createElement("h4");
@@ -301,7 +307,7 @@ async function getWeather(lat, lon, reverseGeo=false) {
         if (currentTemp === 0 || currentTemp) {
             if (obJson.properties.temperature.unitCode.includes('degC')) {
                 currentTemp = Math.round(c2f(currentTemp))
-                obJson.properties.temperature.unitCode.includes = 'degF'
+                obJson.properties.temperature.unitCode = 'degF'
             }
             else {
                 currentTemp = Math.round(currentTemp)
@@ -334,7 +340,7 @@ async function getWeather(lat, lon, reverseGeo=false) {
         middleColumn.appendChild(p1)
         nowDiv2.appendChild(middleColumn)
         document.getElementById('summary').appendChild(nowDiv2)
-        dayPeriods = dayProps.periods
+        const dayPeriods = dayProps.periods
         
         //  Create detailed forecasts
         const [reponse_grid] = await Promise.all([fetch_grid]);
@@ -344,7 +350,7 @@ async function getWeather(lat, lon, reverseGeo=false) {
         }
         else {
             console.log('grid:', gridJson)
-            gridProps = gridJson.properties
+            const gridProps = gridJson.properties
             const firstTime = new Date(gridProps.temperature.values[0].validTime.split('/')[0])
 
             let todayMidnight = new Date()  
@@ -363,9 +369,7 @@ async function getWeather(lat, lon, reverseGeo=false) {
             const todayObservationsJson =  await (async () => {return await response_obs.json()})()
             
             console.log("todays observations:", todayObservationsJson)
-            
-            timeLength = gridProps.temperature.values.length
-            
+                        
             //  Match min temperature to max temperature
             const minDate0 = gridProps.minTemperature.values[0].validTime.split('T')[0]
             const maxDate0 = gridProps.maxTemperature.values[0].validTime.split('T')[0]
@@ -417,7 +421,7 @@ async function getWeather(lat, lon, reverseGeo=false) {
             const validDay = Array(numBars)
             let i = 0
             var thisIsToday = (i == 0 && !todayIsIdx0) || todayIsIdx0
-            var currentDay
+            var currentDay, todayData
             while (i < numBars) {
                 const div = document.createElement('button');
                 div.style.outline = 'none'
@@ -529,7 +533,7 @@ async function getWeather(lat, lon, reverseGeo=false) {
                                 
                                 //  Elem = div for temperature plot
                                 const div2 = document.createElement('div')
-                                div2.style.width = "90%"
+                                div2.style.width = "100%"
                                 div2.style.display = "inline-block"
                                 const elem = content.appendChild(div2)
                                 
@@ -606,7 +610,7 @@ async function getWeather(lat, lon, reverseGeo=false) {
                                 
                                 //  Elem2 = div for precipitation plot
                                 const div3 = document.createElement('div')
-                                div3.style.width = "90%"
+                                div3.style.width = "100%"
                                 div3.style.display = "inline-block"
                                 const elem2 = content.appendChild(div3)
 
@@ -657,7 +661,7 @@ async function getWeather(lat, lon, reverseGeo=false) {
                                 }]
                                 
                                 if (plotQPrec) {
-                                    maxInch = Math.max(...tempData['quantitativePrecipitation'].data)
+                                    const maxInch = Math.max(...tempData['quantitativePrecipitation'].data)
                                     traces3 = [{
                                     x: tempData['quantitativePrecipitation'].time,
                                     y: tempData['quantitativePrecipitation'].data,
