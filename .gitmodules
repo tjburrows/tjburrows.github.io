@@ -1,0 +1,3 @@
+[submodule "weather-gov-js"]
+	path = weather-gov-js
+	url = https://github.com/tjburrows/weather-gov-js.git
