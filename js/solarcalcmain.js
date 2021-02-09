@@ -402,7 +402,7 @@ async function genPage(){
         .sliderRight()
         .min(365)
         .max(1)
-        .value(luxon.DateTime.local().setZone(thisTimeZone).day)
+        .value(luxon.DateTime.local().setZone(thisTimeZone).diff(luxon.DateTime.local().setZone(thisTimeZone).startOf('year'), 'days').days + 1)
         .step(1)
         .height(300)
         .displayValue(true)
