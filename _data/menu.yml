@@ -10,3 +10,5 @@
       subhref: "/weather/"
     - subtitle: "CFD in Javascript"
       subhref: "/lbm/"  
+    - subtitle: "Solar Calculator"
+      subhref: '/solarcalc/'

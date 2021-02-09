@@ -1,0 +1,61 @@
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <link rel="stylesheet" href="/weather/css/weather.css">
+
+    <!-- font awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+
+    <!-- d3 -->
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://unpkg.com/d3-simple-slider"></script>
+    
+    <!--  Weather Utils    -->
+<!--     <script src="/weather/js/utils.js"></script> -->
+    <script src="/js/solcalc.js"></script>
+    
+    <!--  timezone lookup    -->
+    <script src="/weather/tz-lookup-oss/tz.js"></script>
+    
+    <!--  Luxon    -->
+    <script src="https://cdn.jsdelivr.net/npm/luxon@1.25.0/build/global/luxon.min.js"></script>
+    
+    <!--   Chart JS   -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@0.2.2/dist/chartjs-adapter-luxon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-crosshair@1.1.6/dist/chartjs-plugin-crosshair.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/0.5.7/chartjs-plugin-annotation.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.css">
+  </head>
+
+  <body style='text-align:center'>
+    <div id="search" style='display:flex;align-items:center;justify-content:center;max-width:500px;margin:0 auto;font-size:25px;margin-top:20px'>
+        <button id='button0' title='Magic' onclick="randomLatLon()" class="fa fa-magic fa-border" style="cursor:pointer"></button>
+        <button id='button1' title='Your Location' onclick="getCurrentLocationSolar()" class="fa fa-location-arrow fa-border" style="cursor:pointer;"></button>
+        <input id='textinput' type="text" style='height:25px;width:80%' value='Somerville, MA'>
+        <button id='button2' title='Search' onclick="geocode2()" class="fa fa-search fa-border" style="cursor:pointer;"></button>
+        <button id='button3' title='Help' onclick="helpmessage()" class="fa fa-question fa-border" style="cursor:pointer;"></button>
+    </div>
+    <p id='Error' style='font-size: 20px;'></p>
+    <p id='Message' style='font-size: 20px;'></p>
+    <div id="map" style='max-width:1000px;margin:0 auto; height:350px;'>
+        <div id="map1"    style='float:left;width:80%;height:350px;'></div>
+        <div id="slider1" style='float:left;width:20%;height:350px;'></div>
+    </div>
+    <div id="plots" style='max-width:1000px;margin:0 auto; height:350px;'>
+        <div id="plots1" style='float:left;width:80%;height:350px;'></div>
+        <div id="plots2" style='float:left;width:20%;height:350px;font-size: 16px;text-align:left;'>
+            <p id='Date'></p>
+            <p id='Timezone'></p>
+            <p id='Sunrise'></p>
+            <p id='Sunset'></p>
+        </div>
+    </div>
+    <script src="/js/solarcalcmain.js"></script>
+  </body>
+</html>
