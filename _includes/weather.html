@@ -24,6 +24,7 @@
     <!--  Weather Utils    -->
     <script src="/weather/js/utils.js"></script>
     <script src="/js/solcalc.js"></script>
+    <script src="/weather/js/autocomplete.js"></script>
     
     <!--  timezone lookup    -->
     <script src="/weather/tz-lookup-oss/tz.js"></script>
@@ -42,7 +43,9 @@
     <div id="search" style='display:flex;align-items:center;justify-content:center;max-width:600px;margin:0 auto;font-size:25px;margin-top:20px'>
         <button id='button0' title='Magic' onclick="button0Func()" class="fa fa-magic fa-border" style="cursor:pointer"></button>
         <button id='button1' title='Your Location' onclick="button1Func()" class="fa fa-location-arrow fa-border" style="cursor:pointer;"></button>
-        <input id='textinput' type="text" style='height:25px;width:100%' value='Somerville, MA'>
+        <div class="autocomplete-container" id="autocomplete-container" style='height:25px;width:100%'>
+            <input id='textinput' type="text" value=''>
+        </div>
         <button id='button2' title='Search' onclick="button2Func()" class="fa fa-search fa-border" style="cursor:pointer;"></button>
         <button id='button3' title='Help' onclick="help()" class="fa fa-question fa-border" style="cursor:pointer;"></button>
     </div>
