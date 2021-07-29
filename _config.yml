@@ -25,14 +25,14 @@ style: kjhealy
 # Set 'provider' to false to turn analytics off globally.
 #
 analytics:
-    provider: Google
+    provider: false
     statcounter:
         sc_project  :
         sc_security :
-        sc_invisible: 1
-        sc_text     : 2
+        sc_invisible:
+        sc_text     :
     google:
-        tracking_id: 'UA-143749328-1'
+        tracking_id:
     getclicky:
       site_id:
     mixpanel:
