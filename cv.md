@@ -18,13 +18,16 @@ Georgia Institute of Technology, GPA 4.00
 North Carolina State University, GPA 3.63
 
 ## Skills
-**Programming** <br>
-C, C++, MATLAB, Python, Javascript, GPU, MPI, OpenMP, Pandas, Git
-
 [![Project Euler badge](https://projecteuler.net/profile/tjburrows.png)](https://projecteuler.net/)
 
+**Programming Languages** <br>
+C, C++, MATLAB, Python, Javascript, CUDA
+
+**Software Libraries**<br>
+MPI, OpenMP, Pandas, Tensorflow, Dask, D3
+
 **Software** <br>
-LabView, Siemens NX, LaVision Davis, Tecplot, Linux
+LabView, Siemens NX, LaVision Davis, Tecplot, Linux, JIRA, Git, Gitlab, Docker
 
 **Laboratory** <br>
 Particle image velocimetry, pressure-sensitive paint, experimental flow
