@@ -10,7 +10,7 @@ In August 2020 I earned my PhD in Mechanical Engineering at Georgia Tech under [
 
 Through this research I developed skills in prototyping, experimental design, data analysis and visualization. Outside of research, I have an interest in high performance computing, modeling and simulation, and data science, which I pursued in part through a minor in computational science and engineering.  Besides this classroom experience, I pursue independent projects in areas including computational fluid dynamics and machine learning.
 
-I am currently a engineer at [Draper Labs](https://www.draper.com/).
+I am currently a software engineer at Google.
 
 ## Contact
 
